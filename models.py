@@ -93,6 +93,7 @@ class Flight(db.Model):
     available_seats = db.Column(db.Integer, nullable=False)
     plane_id = db.Column(db.Integer, db.ForeignKey('plane.plane_id'), nullable=False)
     airline_id = db.Column(db.Integer, db.ForeignKey('airlines.airline_id'), nullable=False)
+    data_lotu = db.Column(db.DateTime, nullable=False)
 
     def to_json(self):
         return {
@@ -103,7 +104,8 @@ class Flight(db.Model):
             "distance": self.distance,
             "available_seats": self.available_seats,
             "plane_id": self.plane_id,
-            "airline_id": self.airline_id
+            "airline_id": self.airline_id,
+            "data_lotu": self.data_lotu
         }
 
 class Ticket(db.Model):
