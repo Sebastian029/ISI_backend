@@ -155,10 +155,8 @@ def get_flights_with_airports():
         date = datetime.strptime(date_str, '%Y-%m-%d')
 
         # Wykonujemy łączenie (join) tabeli Flight z tabelami Airport i City dla lotniska wylotowego
-        flights_with_airports_dep = db.session.query(
-            Flight, Airport, City.city_id, City.city_name
-        ).join(
-            Airport, Flight.departure_airport_id == Airport.airport_id
+        airports_dep = db.session.query(
+            Airport, City.city_id, City.city_name
         ).join(
             City, Airport.city_id == City.city_id
         ).filter(
@@ -166,11 +164,19 @@ def get_flights_with_airports():
             Flight.data_lotu == date
         ).all()
 
-        # Wykonujemy łączenie (join) tabeli Flight z tabelami Airport i City dla lotniska przylotowego
-        flights_with_airports_arr = db.session.query(
-            Flight, Airport, City.city_id, City.city_name
-        ).join(
-            Airport, Flight.arrive_airport_id == Airport.airport_id
+        json_airports_dep = [
+            {
+                "airport_id": airport.airport_id,
+                "airport_name": airport.airport_name,
+                "IATA": airport.IATA,
+                "city_id": city_id,
+                "city_name": city_name
+            }
+            for airport, city_id, city_name in airports_dep
+        ]
+
+        airports_arr = db.session.query(
+            Airport, City.city_id, City.city_name
         ).join(
             City, Airport.city_id == City.city_id
         ).filter(
@@ -178,28 +184,49 @@ def get_flights_with_airports():
             Flight.data_lotu == date
         ).all()
 
-        # Konwersja wyników na format JSON dla lotniska wylotowego
-        flights_json = []
-        for flight, dep_airport, dep_city_id, dep_city_name in flights_with_airports_dep:
-            flight_data = flight.to_json()
-            flight_data['departure_airport'] = {
-                'airport_id': dep_airport.airport_id,
-                'airport_name': dep_airport.airport_name,
-                'IATA': dep_airport.IATA,
-                'city_id': dep_city_id,
-                'city_name': dep_city_name
+        json_airports_arr = [
+            {
+                "airport_id": airport.airport_id,
+                "airport_name": airport.airport_name,
+                "IATA": airport.IATA,
+                "city_id": city_id,
+                "city_name": city_name
             }
-            flights_json.append(flight_data)
+            for airport, city_id, city_name in airports_arr
+        ]
 
-        # Dodanie danych o lotnisku przylotowym do flights_json
-        for idx, (flight, arr_airport, arr_city_id, arr_city_name) in enumerate(flights_with_airports_arr):
-            flights_json[idx]['arrival_airport'] = {
-                'airport_id': arr_airport.airport_id,
-                'airport_name': arr_airport.airport_name,
-                'IATA': arr_airport.IATA,
-                'city_id': arr_city_id,
-                'city_name': arr_city_name
+        # Wykonujemy łączenie (join) tabeli Flight z tabelami Airport i City dla lotniska przylotowego
+        flights_with_airports_arr = db.session.query(
+            Flight
+        ).filter(
+            Flight.departure_airport_id == json_airports_dep[0]["airport_id"],
+            Flight.arrive_airport_id == json_airports_arr[0]["airport_id"],
+            Flight.data_lotu == date
+        ).all()
+
+        json_flights = [
+            {
+                "flight_id":flight.flight_id,
+                "departure_airport_id":flight.departure_airport_id,
+                "arrive_airport_id":flight.arrive_airport_id,
+                "distance":flight.distance,
+                "available_seats":flight.available_seats,
+
             }
+            for flight in flights_with_airports_arr
+        ]
+
+        # Konwersja wyników na format JSON dla lotniska wylotowego
+        flights_json = [
+            {
+                "departure airport":json_airports_dep[0]["airport_name"],
+                "departure city":json_airports_dep[0]["city_name"],
+                "arrival airport": json_airports_arr[0]["airport_name"],
+                "arrival city": json_airports_arr[0]["city_name"],
+                "distance":json_flights[0]["distance"],
+                "available_seats":json_flights[0]["available_seats"]
+            }
+        ]
 
         return jsonify(flights_json), 200
     except Exception as e:
