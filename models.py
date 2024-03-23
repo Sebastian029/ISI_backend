@@ -113,9 +113,8 @@ class Ticket(db.Model):
     seat_row = db.Column(db.Integer, nullable=False)
     seat_column = db.Column(db.Integer, nullable=False)
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)
-    is_bought = db.Column(db.Boolean, nullable=False)
+    price = db.Column(db.Float, nullable=False)
     ticket_class = db.Column(db.String(50), nullable=False)
-    both_ways = db.Column(db.Boolean, nullable=False)
 
     def to_json(self):
         return {
@@ -124,6 +123,6 @@ class Ticket(db.Model):
             "seat_column": self.seat_column,
             "flight_id": self.flight_id,
             "is_bought": self.is_bought,
+            "price": self.price,
             "ticket_class": self.ticket_class,
-            "both_ways": self.both_ways
         }

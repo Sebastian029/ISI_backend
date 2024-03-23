@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from config import app, db
-from models import User, Airport, City, Flight, Airport
+from models import User, Airport, City, Flight, Airport, Ticket
 from datetime import datetime
 
 @app.route("/register", methods=["POST"])
@@ -216,6 +216,18 @@ def get_flights_with_airports():
             for flight in flights_with_airports_arr
         ]
 
+        ticket = db.session.query(
+            Ticket
+        ).filter(
+            Ticket.flight_id == json_flights[0]["flight_id"]
+        ).all()
+
+        json_tickets = [
+            {
+                "price":ticket[0].price
+            }
+        ]
+
         # Konwersja wyników na format JSON dla lotniska wylotowego
         flights_json = [
             {
@@ -224,7 +236,8 @@ def get_flights_with_airports():
                 "arrival airport": json_airports_arr[0]["airport_name"],
                 "arrival city": json_airports_arr[0]["city_name"],
                 "distance":json_flights[0]["distance"],
-                "available_seats":json_flights[0]["available_seats"]
+                "available_seats":json_flights[0]["available_seats"],
+                "ticket price":json_tickets[0]["price"]
             }
         ]
 
