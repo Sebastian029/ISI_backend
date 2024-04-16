@@ -2,8 +2,12 @@ from flask import request, jsonify
 from config import app, db
 from models import User, Airport, City, Flight, Airport, Ticket
 from datetime import datetime
+from validate_email_address import validate_email
 
 @app.route("/register", methods=["POST"])
+
+
+
 def register_user():
     data = request.json
     first_name = data.get("firstName")
@@ -12,9 +16,21 @@ def register_user():
     phone_number = data.get("phoneNumber")
     password = data.get("password")
 
+    # Sprawdzenie czy wszystkie wymagane pola są dostarczone
     if not all([first_name, last_name, email, phone_number, password]):
         return jsonify({"message": "You must include all required fields: first name, last name, email, phone number, password"}), 400
 
+    # Walidacja adresu e-mail
+    if not validate_email(email):
+        return jsonify({"message": "Invalid email address format"}), 400
+
+    # Walidacja numeru telefonu - przykładowa walidacja dla polskiego numeru telefonu
+    if not phone_number.startswith('+48') or len(phone_number) != 9:
+        return jsonify({"message": "Invalid phone number format. Phone number should start with '+48' and be 12 digits long"}), 400
+
+    # Tutaj możesz dodać inne rodzaje walidacji, np. dla hasła
+
+    # Jeśli dane są poprawne, tworzymy nowego użytkownika i zapisujemy go w bazie danych
     new_user = User(
         name=first_name,
         surname=last_name,
@@ -29,8 +45,9 @@ def register_user():
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
-    # Zwrócenie wszystkich danych nowo zarejestrowanego użytkownika w formacie JSON
+    # Zwrócenie odpowiedzi potwierdzającej utworzenie użytkownika
     return jsonify({"message": "User created!"}), 201
+
 
 
 
@@ -244,6 +261,17 @@ def get_flights_with_airports():
         return jsonify(flights_json), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+@app.route("/city", methods=["GET"])
+def get_city():
+    q = request.args.get("q")
+    print(q)
+    results=[]
+    if q:
+       results = City.query.filter(City.city_name.ilike(f"%{q}%")).order_by(City.city_name.desc()).limit(6).all()
+     
+    return jsonify(results)
+
 
 
 if __name__ == "__main__":
