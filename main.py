@@ -5,9 +5,6 @@ from datetime import datetime
 from validate_email_address import validate_email
 
 @app.route("/register", methods=["POST"])
-
-
-
 def register_user():
     data = request.json
     first_name = data.get("firstName")
@@ -24,10 +21,23 @@ def register_user():
     if not validate_email(email):
         return jsonify({"message": "Invalid email address format"}), 400
 
-    # Walidacja numeru telefonu - przykładowa walidacja dla polskiego numeru telefonu
-    if not phone_number.startswith('+48') or len(phone_number) != 9:
-        return jsonify({"message": "Invalid phone number format. Phone number should start with '+48' and be 12 digits long"}), 400
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({"message": "Email already exists"}), 400
 
+    if not phone_number.startswith('+48') or len(phone_number) != 12 or not phone_number[3:].isdigit():
+        return jsonify({"message": "Invalid phone number format. Phone number should start with '+48' and be 9 digits long"}), 400
+
+    # Usunięcie prefiksu kierunkowego przed zapisaniem do bazy danych
+    phone_number = phone_number[3:]
+
+    existing_phone = User.query.filter_by(phone_number=phone_number).first()
+    if existing_phone:
+        return jsonify({"message": "Number already exists"}), 400
+
+    existing_phone = User.query.filter_by(phone_number=phone_number).first()
+    if existing_phone:
+        return jsonify({"message": "Number already exists"}), 400
     # Tutaj możesz dodać inne rodzaje walidacji, np. dla hasła
 
     # Jeśli dane są poprawne, tworzymy nowego użytkownika i zapisujemy go w bazie danych
