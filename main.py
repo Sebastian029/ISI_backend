@@ -13,11 +13,9 @@ def register_user():
     phone_number = data.get("phoneNumber")
     password = data.get("password")
 
-    # Sprawdzenie czy wszystkie wymagane pola są dostarczone
     if not all([first_name, last_name, email, phone_number, password]):
         return jsonify({"message": "You must include all required fields: first name, last name, email, phone number, password"}), 400
 
-    # Walidacja adresu e-mail
     if not validate_email(email):
         return jsonify({"message": "Invalid email address format"}), 400
 
@@ -25,22 +23,13 @@ def register_user():
     if existing_user:
         return jsonify({"message": "Email already exists"}), 400
 
-    if not phone_number.startswith('+48') or len(phone_number) != 12 or not phone_number[3:].isdigit():
-        return jsonify({"message": "Invalid phone number format. Phone number should start with '+48' and be 9 digits long"}), 400
-
-    # Usunięcie prefiksu kierunkowego przed zapisaniem do bazy danych
-    phone_number = phone_number[3:]
+    if   len(phone_number) != 9:
+        return jsonify({"message": "Invalid phone number format. Phone number should be 9 digits long"}), 400
 
     existing_phone = User.query.filter_by(phone_number=phone_number).first()
     if existing_phone:
         return jsonify({"message": "Number already exists"}), 400
 
-    existing_phone = User.query.filter_by(phone_number=phone_number).first()
-    if existing_phone:
-        return jsonify({"message": "Number already exists"}), 400
-    # Tutaj możesz dodać inne rodzaje walidacji, np. dla hasła
-
-    # Jeśli dane są poprawne, tworzymy nowego użytkownika i zapisujemy go w bazie danych
     new_user = User(
         name=first_name,
         surname=last_name,
@@ -55,11 +44,7 @@ def register_user():
     except Exception as e:
         return jsonify({"message": str(e)}), 400
 
-    # Zwrócenie odpowiedzi potwierdzającej utworzenie użytkownika
     return jsonify({"message": "User created!"}), 201
-
-
-
 
 @app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
@@ -85,14 +70,11 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    # Sprawdzenie czy użytkownik istnieje w bazie danych
     user = User.query.filter_by(email=email, password=password).first()
     if user:
         return jsonify(user.user_id)
     else:
         return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
-
-
 
 @app.route("/delete_contact/<int:user_id>", methods=["DELETE"])
 def delete_contact(user_id):
@@ -106,17 +88,14 @@ def delete_contact(user_id):
 
     return jsonify({"message": "User deleted!"}), 200
 
-
 @app.route("/")
 def init():
     return "Hello WORLD"
-
 
 @app.route("/users", methods=["GET"])
 def get_contacts():
     users = User.query.all()
     json_users = list(map(lambda x: x.to_json(), users))
-    # print(json_users)
     return jsonify(json_users)
 
 @app.route("/airports", methods=["GET"])
@@ -134,29 +113,21 @@ def get_ports():
     ]
     return jsonify(json_airports)
 
-
-
-
-
 @app.route('/flights', methods=['GET'])
 def get_flights():
     try:
-        # Pobieranie danych z zapytania
         departure_airport_name = request.args.get('departure_airport')
         arrive_airport_name = request.args.get('arrive_airport')
         date_str = request.args.get('data_lotu')
-        
-        # Konwersja daty na obiekt datetime
+
         date = datetime.strptime(date_str, '%Y-%m-%d')
-        
-        # Pobranie lotów pasujących do podanych danych
+
         flights = Flight.query.filter(
             Flight.departure_airport.has(airport_name=departure_airport_name),
             Flight.arrive_airport.has(airport_name=arrive_airport_name),
             Flight.data_lotu == date
         ).all()
 
-        # Konwersja znalezionych lotów na format JSON
         flights_json = []
         for flight in flights:
             flight_data = flight.to_json()
@@ -164,24 +135,19 @@ def get_flights():
             flight_data['arrive_airport_name'] = flight.arrive_airport.airport_name
             flights_json.append(flight_data)
 
-        # Zwracanie znalezionych lotów jako odpowiedź JSON
         return jsonify(flights_json), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-
 @app.route('/flights_with_airports', methods=['GET'])
 def get_flights_with_airports():
     try:
-        # Pobieramy dane z zapytania
         departure_airport_name = request.args.get('departure_airport')
         arrive_airport_name = request.args.get('arrive_airport')
         date_str = request.args.get('data_lotu')
-        
-        # Konwertujemy datę z ciągu znaków na obiekt datetime
+
         date = datetime.strptime(date_str, '%Y-%m-%d')
 
-        # Wykonujemy łączenie (join) tabeli Flight z tabelami Airport i City dla lotniska wylotowego
         airports_dep = db.session.query(
             Airport, City.city_id, City.city_name
         ).join(
@@ -222,7 +188,6 @@ def get_flights_with_airports():
             for airport, city_id, city_name in airports_arr
         ]
 
-        # Wykonujemy łączenie (join) tabeli Flight z tabelami Airport i City dla lotniska przylotowego
         flights_with_airports_arr = db.session.query(
             Flight
         ).filter(
@@ -255,7 +220,6 @@ def get_flights_with_airports():
             }
         ]
 
-        # Konwersja wyników na format JSON dla lotniska wylotowego
         flights_json = [
             {
                 "departure airport":json_airports_dep[0]["airport_name"],
@@ -275,14 +239,10 @@ def get_flights_with_airports():
 @app.route("/city", methods=["GET"])
 def get_city():
     q = request.args.get("q")
-    print(q)
     results=[]
     if q:
        results = City.query.filter(City.city_name.ilike(f"%{q}%")).order_by(City.city_name.desc()).limit(6).all()
-     
     return jsonify(results)
-
-
 
 if __name__ == "__main__":
     with app.app_context():
