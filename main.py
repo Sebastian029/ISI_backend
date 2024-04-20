@@ -1,8 +1,31 @@
 from flask import request, jsonify
 from config import app, db
-from models import User, Airport, City, Flight, Airport, Ticket
-from datetime import datetime
+from models import User, Airport, City, Flight, Airport, Ticket, Order
+import datetime
 from validate_email_address import validate_email
+import uuid
+from werkzeug.security import generate_password_hash,check_password_hash
+import jwt
+from functools import wraps
+
+def token_required(f):
+   @wraps(f)
+   def decorator(*args, **kwargs):
+       token = None
+       if 'x-access-tokens' in request.headers:
+           token = request.headers['x-access-tokens']
+ 
+       if not token:
+           return jsonify({'message': 'a valid token is missing'})
+       try:
+           data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+           current_user = User.query.filter_by(public_id=data['public_id']).first()
+       except:
+           return jsonify({'message': 'token is invalid'})
+ 
+       return f(current_user, *args, **kwargs)
+   return decorator
+
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -11,9 +34,9 @@ def register_user():
     last_name = data.get("lastName")
     email = data.get("email")
     phone_number = data.get("phoneNumber")
-    password = data.get("password")
+    hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
 
-    if not all([first_name, last_name, email, phone_number, password]):
+    if not all([first_name, last_name, email, phone_number, hashed_password]):
         return jsonify({"message": "You must include all required fields: first name, last name, email, phone number, password"}), 400
 
     if not validate_email(email):
@@ -31,11 +54,12 @@ def register_user():
         return jsonify({"message": "Number already exists"}), 400
 
     new_user = User(
+        public_id=str(uuid.uuid4()),
         name=first_name,
         surname=last_name,
         email=email,
         phone_number=phone_number,
-        password=password
+        password=hashed_password
     )
 
     try:
@@ -45,6 +69,7 @@ def register_user():
         return jsonify({"message": str(e)}), 400
 
     return jsonify({"message": "User created!"}), 201
+
 
 @app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
@@ -70,11 +95,13 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(email=email, password=password).first()
-    if user:
-        return jsonify(user.user_id)
-    else:
-        return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
+    user = User.query.filter_by(email=email).first()
+    if check_password_hash(user.password, password):
+        token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
+
+        return jsonify({'token' : token})
+    
+    return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
 @app.route("/delete_contact/<int:user_id>", methods=["DELETE"])
 def delete_contact(user_id):
@@ -88,6 +115,25 @@ def delete_contact(user_id):
 
     return jsonify({"message": "User deleted!"}), 200
 
+@app.route('/order', methods=['POST'])
+@token_required
+def create_order(current_user):
+    data = request.json
+    full_price = data.get("full_price")
+    is_payment_completed = data.get("is_payment_completed")
+    ticket_ids = data.get("ticket_ids")  
+
+    new_order = Order(user_id=current_user.id, full_price=full_price, is_payment_completed=is_payment_completed) 
+
+    for ticket_id in ticket_ids:
+        ticket = Ticket.query.get(ticket_id)
+        if ticket:
+            new_order.tickets.append(ticket)
+
+    db.session.add(new_order)  
+    db.session.commit() 
+
+    return jsonify({'message' : 'New order created'})
 @app.route("/")
 def init():
     return "Hello WORLD"

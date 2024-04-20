@@ -68,6 +68,7 @@ class Airlines(db.Model):
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
+    public_id = db.Column(db.String(36), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     surname = db.Column(db.String(255), nullable=False)
     phone_number = db.Column(db.String(20), unique=True, nullable=False)
@@ -77,6 +78,7 @@ class User(db.Model):
     def to_json(self):
         return {
             "user_id": self.user_id,
+            "public_id":self.public_id,
             "name": self.name,
             "surname": self.surname,
             "phone_number": self.phone_number,
@@ -125,4 +127,19 @@ class Ticket(db.Model):
             "is_bought": self.is_bought,
             "price": self.price,
             "ticket_class": self.ticket_class,
+        }
+class Order(db.Model):
+    order_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    full_price = db.Column(db.Float, nullable=False)
+    is_payment_completed = db.Column(db.Boolean, nullable=False)
+
+    tickets = db.relationship('Ticket', backref='order', lazy=True)
+
+    def to_json(self):
+        return {
+            "order_id": self.order_id,
+            "user_id": self.user_id,
+            "full_price": self.full_price,
+            "is_payment_completed": self.is_payment_completed
         }
