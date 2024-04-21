@@ -66,25 +66,7 @@ class Airlines(db.Model):
             "airline_name": self.airline_name
         }
 
-class User(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(db.String(36), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
-    surname = db.Column(db.String(255), nullable=False)
-    phone_number = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
 
-    def to_json(self):
-        return {
-            "user_id": self.user_id,
-            "public_id":self.public_id,
-            "name": self.name,
-            "surname": self.surname,
-            "phone_number": self.phone_number,
-            "email": self.email,
-            "password": self.password
-        }
 
 class Flight(db.Model):
     flight_id = db.Column(db.Integer, primary_key=True)
@@ -110,24 +92,47 @@ class Flight(db.Model):
             "data_lotu": self.data_lotu
         }
 
-class Ticket(db.Model):
-    ticket_id = db.Column(db.Integer, primary_key=True)
-    seat_row = db.Column(db.Integer, nullable=False)
-    seat_column = db.Column(db.Integer, nullable=False)
-    flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    ticket_class = db.Column(db.String(50), nullable=False)
+
+class User(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    public_id = db.Column(db.String(36), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    surname = db.Column(db.String(255), nullable=False)
+    phone_number = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+
+    users = db.relationship('Order', backref='user', lazy=True)
 
     def to_json(self):
         return {
+            "user_id": self.user_id,
+            "public_id":self.public_id,
+            "name": self.name,
+            "surname": self.surname,
+            "phone_number": self.phone_number,
+            "email": self.email,
+            "password": self.password
+        }
+
+class Ticket(db.Model):
+    ticket_id = db.Column(db.Integer, primary_key=True)
+    flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    is_bought = db.Column(db.Boolean, nullable=False, default=False)  
+    price = db.Column(db.Float, nullable=False)
+    ticket_class = db.Column(db.String(50), nullable=False)
+    
+    def to_json(self):
+        return {
             "ticket_id": self.ticket_id,
-            "seat_row": self.seat_row,
-            "seat_column": self.seat_column,
             "flight_id": self.flight_id,
-            "is_bought": self.is_bought,
+            "order_id": self.order_id,
+            "is_bought": self.is_bought,  
             "price": self.price,
             "ticket_class": self.ticket_class,
         }
+
 class Order(db.Model):
     order_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
