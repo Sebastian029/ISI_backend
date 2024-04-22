@@ -92,7 +92,16 @@ class Flight(db.Model):
             "data_lotu": self.data_lotu
         }
 
-
+class Role_Users(db.Model):
+    __tablename__ = 'role_users'
+    user_id = db.Column(db.Integer, db.ForeignKey('role.role_id'), nullable=False, primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False, primary_key=True)
+    
+    def to_json(self):
+        return {
+            "user_id": self.user_id,
+            "role_id":self.role_id
+        }
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     public_id = db.Column(db.String(36), nullable=False)
@@ -101,7 +110,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-
+    roles = db.relationship('Role', secondary='role_users', backref='roled')
     users = db.relationship('Order', backref='user', lazy=True)
 
     def to_json(self):
@@ -115,6 +124,16 @@ class User(db.Model):
             "password": self.password
         }
 
+class Role(db.Model):
+    role_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+
+    def to_json(self):
+        return {
+            "role_id": self.user_id,
+            "name":self.name,
+        }
+    
 class Ticket(db.Model):
     ticket_id = db.Column(db.Integer, primary_key=True)
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)

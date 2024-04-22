@@ -21,3 +21,16 @@ def token_required(f):
  
        return f(current_user, *args, **kwargs)
    return decorator
+
+
+def role_required(role_name):
+    def decorator(func):
+        @wraps(func)
+        def authorize(current_user, *args, **kwargs):
+            roles = current_user.roles
+            list_roles = [role.name for role in roles]
+            if role_name not in list_roles:
+                return jsonify({'message': 'role is invalid'})
+            return func(current_user, *args, **kwargs)
+        return authorize
+    return decorator

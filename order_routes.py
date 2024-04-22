@@ -2,10 +2,11 @@ import datetime
 from flask import request, jsonify
 from config import app, db
 from models import Order, Ticket
-from utils import token_required
+from utils import token_required, role_required
 
 @app.route('/order', methods=['POST'])
 @token_required
+@role_required('admin')
 def create_order(current_user):
     data = request.json
     full_price = data.get("full_price")

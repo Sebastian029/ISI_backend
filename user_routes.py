@@ -4,7 +4,7 @@ from flask import request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from validate_email_address import validate_email
 from config import app, db
-from models import User
+from models import User, Role
 from utils import token_required
 import uuid
 
@@ -40,8 +40,14 @@ def register_user():
         surname=last_name,
         email=email,
         phone_number=phone_number,
-        password=hashed_password
+        password=hashed_password,
+        
     )
+    role_id = 2 
+    role = Role.query.get(role_id)
+    new_user.roles.append(role)
+
+    
 
     try:
         db.session.add(new_user)
