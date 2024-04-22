@@ -45,6 +45,7 @@ def register_user():
     )
     role_id = 2 
     role = Role.query.get(role_id)
+    print(role)
     new_user.roles.append(role)
 
     
@@ -84,9 +85,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if check_password_hash(user.password, password):
+        roles = [role.name for role in user.roles]
+        print("Role użytkownika:", roles)
         token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
 
-        return jsonify({'token' : token})
+        return jsonify({'token': token, 'roles': roles})
     
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
