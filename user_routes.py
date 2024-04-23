@@ -106,7 +106,8 @@ def delete_contact(user_id):
     return jsonify({"message": "User deleted!"}), 200
 
 @app.route("/users", methods=["GET"])
-def get_contacts():
+@token_required
+def get_contacts(current_user):
     users = User.query.all()
     json_users = list(map(lambda x: x.to_json(), users))
     return jsonify(json_users)
