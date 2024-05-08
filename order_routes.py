@@ -6,7 +6,7 @@ from utils import token_required, role_required
 
 @app.route('/order', methods=['POST'])
 @token_required
-@role_required('admin')
+@role_required('user')
 def create_order(current_user):
     data = request.json
     full_price = data.get("full_price")

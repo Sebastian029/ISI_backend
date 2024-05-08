@@ -1,24 +1,9 @@
 from flask import request, jsonify
 from config import app, db
 from models import User, Airport, City, Flight, Ticket, Order
-import datetime
+from datetime import datetime
 
 
-
-@app.route("/airports", methods=["GET"])
-def get_ports():
-    airports = db.session.query(Airport, City.city_id, City.city_name).join(City).all()
-    json_airports = [
-        {
-            "airport_id": airport.airport_id,
-            "airport_name": airport.airport_name,
-            "IATA": airport.IATA,
-            "city_id": city_id,
-            "city_name": city_name
-        }
-        for airport, city_id, city_name in airports
-    ]
-    return jsonify(json_airports)
 
 @app.route('/flights', methods=['GET'])
 def get_flights():
