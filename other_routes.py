@@ -129,13 +129,14 @@ def get_flights_with_airports():
 
         flights_json = [
             {
-                "departure airport":json_airports_dep[0]["airport_name"],
-                "departure city":json_airports_dep[0]["city_name"],
-                "arrival airport": json_airports_arr[0]["airport_name"],
-                "arrival city": json_airports_arr[0]["city_name"],
+                "flight_id":json_flights[0]["flight_id"],
+                "departure_airport":json_airports_dep[0]["airport_name"],
+                "departure_city":json_airports_dep[0]["city_name"],
+                "arrival_airport": json_airports_arr[0]["airport_name"],
+                "arrival_city": json_airports_arr[0]["city_name"],
                 "distance":json_flights[0]["distance"],
                 "available_seats":json_flights[0]["available_seats"],
-                "ticket price":json_tickets[0]["price"]
+                "ticket_price":json_tickets[0]["price"]
             }
         ]
 

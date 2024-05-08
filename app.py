@@ -1,7 +1,7 @@
 from flask import Flask
 from config import app, db
 from order_routes import *
-# from other_routes import *
+from other_routes import get_flights_with_airports
 from user_routes import *
 
 if __name__ == "__main__":

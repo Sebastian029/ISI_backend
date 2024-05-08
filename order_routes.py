@@ -19,6 +19,9 @@ def create_order(current_user):
 
     return jsonify({'message' : 'New order created'})
 
+
+
+
 @app.route("/")
 def init():
     return "Hello WORLD"

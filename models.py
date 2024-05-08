@@ -45,15 +45,19 @@ class Airport(db.Model):
 class Plane(db.Model):
     plane_id = db.Column(db.Integer, primary_key=True)
     plane_name = db.Column(db.String(255), nullable=False)
-    seat_rows = db.Column(db.Integer, nullable=False)
-    seat_columns = db.Column(db.Integer, nullable=False)
+    seat_rows_bis = db.Column(db.Integer, nullable=False)
+    seat_columns_bis = db.Column(db.Integer, nullable=False)
+    seat_rows_eco = db.Column(db.Integer, nullable=False)
+    seat_columns_eco = db.Column(db.Integer, nullable=False)
 
     def to_json(self):
         return {
             "plane_id": self.plane_id,
             "plane_name": self.plane_name,
-            "seat_rows": self.seat_rows,
-            "seat_columns": self.seat_columns
+            "seat_rows_bis": self.seat_rows_bis,
+            "seat_columns_bis": self.seat_columns_bis,
+            "seat_rows_eco": self.seat_rows_eco,
+            "seat_columns_eco": self.seat_columns_eco
         }
 
 class Airlines(db.Model):
@@ -137,11 +141,13 @@ class Role(db.Model):
 class Ticket(db.Model):
     ticket_id = db.Column(db.Integer, primary_key=True)
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'), nullable=False)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.order_id'))
     is_bought = db.Column(db.Boolean, nullable=False, default=False)  
     price = db.Column(db.Float, nullable=False)
     ticket_class = db.Column(db.String(50), nullable=False)
-    
+    row = db.Column(db.String(2), nullable=False)
+    column = db.Column(db.Integer, nullable=False)
+
     def to_json(self):
         return {
             "ticket_id": self.ticket_id,
@@ -150,6 +156,8 @@ class Ticket(db.Model):
             "is_bought": self.is_bought,  
             "price": self.price,
             "ticket_class": self.ticket_class,
+            "row": self.row,
+            "column": self.column
         }
 
 class Order(db.Model):
