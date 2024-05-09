@@ -1,13 +1,12 @@
 from config import app, db
-from models import  Flight, Airport, Plane, Airlines
-from flask import request, jsonify
-
-from config import app, db
 from models import Flight, Airport, Plane, Airlines, Ticket
 from flask import request, jsonify
+from utils import token_required,role_required
 
 @app.route("/flight_register", methods=["POST"])
-def register_flight():
+@token_required
+@role_required('admin')
+def register_flight(current_user):
     data = request.json
     departure_airport_name = data.get("departure_airport")
     arrive_airport_name = data.get("arrive_airport")
@@ -29,7 +28,7 @@ def register_flight():
     avaiable = plane.seat_rows_bis*plane.seat_columns_bis + plane.seat_rows_eco*plane.seat_columns_eco
 
     if departure_airport and arrive_airport and plane and airline:
-        # Tworzenie nowego lotu
+
         new_flight = Flight(departure_airport_id=departure_airport.airport_id,
                             arrive_airport_id=arrive_airport.airport_id,
                             travel_time=travel_time,
@@ -43,34 +42,31 @@ def register_flight():
             db.session.add(new_flight)
             db.session.commit()
 
-            # Pobieramy informacje o liczbie rzędów i kolumn z samolotu
             rows_bis = plane.seat_rows_bis
             columns_bis = plane.seat_columns_bis
             rows_eco = plane.seat_rows_eco
             columns_eco = plane.seat_columns_eco
 
-            # Dodajemy bilety dla klasy biznesowej
             for row in range(1, rows_bis + 1):
                 for column in range(1, columns_bis + 1):
-                    row_label =chr(ord('A') + row - 1) + chr(ord('A') + row - 1)  # Numer rzędu w klasie biznesowej zaczyna się od 'A'
+                    row_label =chr(ord('A') + row - 1) + chr(ord('A') + row - 1)  
                     new_ticket = Ticket(flight_id=new_flight.flight_id,
-                                        price=100.0,  # Cena może być dowolna, tutaj jest przykładowa
-                                        ticket_class="Business",  # Klasa biletu
+                                        price=100.0,  
+                                        ticket_class="Business",  
                                         row=row_label,
                                         column=column,
-                                        is_bought=1)
+                                        is_bought=0)
                     db.session.add(new_ticket)
 
-            # Dodajemy bilety dla klasy ekonomicznej
             for row in range(1, rows_eco + 1):
                 for column in range(1, columns_eco + 1):
-                    row_label = chr(ord('A') + row - 1) # Numer rzędu w klasie ekonomicznej zaczyna się od 'A'
+                    row_label = chr(ord('A') + row - 1) 
                     new_ticket = Ticket(flight_id=new_flight.flight_id,
-                                        price=50.0,  # Cena może być dowolna, tutaj jest przykładowa
-                                        ticket_class="Economy",  # Klasa biletu
+                                        price=50.0,  
+                                        ticket_class="Economy",  
                                         row=row_label,
                                         column=column,
-                                        is_bought=1)
+                                        is_bought=0)
                     db.session.add(new_ticket)
 
             db.session.commit()
