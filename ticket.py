@@ -48,15 +48,11 @@ def buy_tickets(current_user):
 
         for ticket_data in tickets_to_buy:
             ticket_id = ticket_data.get("ticket_id")
-            ticket_price = ticket_data.get("price")
-
-            if ticket_price is None:
-                db.session.rollback()
-                return jsonify({"message": f"Ticket price is missing for ticket with id {ticket_id}"}), 400
-
+            
             ticket = Ticket.query.get(ticket_id)
 
             if ticket:
+                ticket_price = ticket.price  
                 ticket.is_bought = True
                 ticket.order_id = new_order.order_id
                 total_price += ticket_price
