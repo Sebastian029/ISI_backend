@@ -7,6 +7,7 @@ from airport import get_ports
 from plane import get_planes
 from airline import get_airlines
 from ticket import get_tickets
+from flight import register_flight
 
 if __name__ == "__main__":
     with app.app_context():

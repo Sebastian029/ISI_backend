@@ -39,7 +39,7 @@ def role_required(role_name):
     return decorator
 
 def generate_jwt_token(public_id):
-    expiration_time = datetime.utcnow() + timedelta(minutes=1)
+    expiration_time = datetime.utcnow() + timedelta(minutes=15)
     
     payload = {
         'public_id': public_id,
