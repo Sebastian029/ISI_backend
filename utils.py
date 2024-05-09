@@ -38,11 +38,11 @@ def role_required(role_name):
         return authorize
     return decorator
 
-def generate_jwt_token(user_id):
+def generate_jwt_token(public_id):
     expiration_time = datetime.utcnow() + timedelta(minutes=1)
     
     payload = {
-        'user_id': user_id,
+        'public_id': public_id,
         'exp': expiration_time
     }
     

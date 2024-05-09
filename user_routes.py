@@ -1,11 +1,9 @@
-import datetime
-import jwt
 from flask import request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from validate_email_address import validate_email
 from config import app, db
 from models import User, Role
-from utils import token_required
+from utils import token_required, generate_jwt_token
 import uuid
 
 @app.route("/register", methods=["POST"])
@@ -87,7 +85,7 @@ def login():
     if check_password_hash(user.password, password):
         roles = [role.name for role in user.roles]
         print("Role użytkownika:", roles)
-        token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
+        token = generate_jwt_token(user.public_id)
 
         return jsonify({'token': token, 'roles': roles})
     
