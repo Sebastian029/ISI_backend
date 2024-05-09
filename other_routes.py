@@ -46,19 +46,7 @@ def get_flights_with_airports():
             City, Airport.city_id == City.city_id
         ).filter(
             Airport.airport_name == departure_airport_name,
-            Flight.data_lotu == date
-        ).all()
-
-        json_airports_dep = [
-            {
-                "airport_id": airport.airport_id,
-                "airport_name": airport.airport_name,
-                "IATA": airport.IATA,
-                "city_id": city_id,
-                "city_name": city_name
-            }
-            for airport, city_id, city_name in airports_dep
-        ]
+        ).first()
 
         airports_arr = db.session.query(
             Airport, City.city_id, City.city_name
@@ -66,66 +54,42 @@ def get_flights_with_airports():
             City, Airport.city_id == City.city_id
         ).filter(
             Airport.airport_name == arrive_airport_name,
-            Flight.data_lotu == date
-        ).all()
+        ).first()
 
-        json_airports_arr = [
-            {
-                "airport_id": airport.airport_id,
-                "airport_name": airport.airport_name,
-                "IATA": airport.IATA,
-                "city_id": city_id,
-                "city_name": city_name
-            }
-            for airport, city_id, city_name in airports_arr
-        ]
+        if not airports_dep or not airports_arr:
+            return jsonify({'error': 'Departure or arrival airport not found.'}), 404
 
-        flights_with_airports_arr = db.session.query(
+        dep_airport, dep_city_id, dep_city_name = airports_dep
+        arr_airport, arr_city_id, arr_city_name = airports_arr
+
+        flights = db.session.query(
             Flight
         ).filter(
-            Flight.departure_airport_id == json_airports_dep[0]["airport_id"],
-            Flight.arrive_airport_id == json_airports_arr[0]["airport_id"],
+            Flight.departure_airport_id == dep_airport.airport_id,
+            Flight.arrive_airport_id == arr_airport.airport_id,
             Flight.data_lotu == date
         ).all()
 
-        json_flights = [
-            {
-                "flight_id":flight.flight_id,
-                "departure_airport_id":flight.departure_airport_id,
-                "arrive_airport_id":flight.arrive_airport_id,
-                "distance":flight.distance,
-                "available_seats":flight.available_seats,
+        if not flights:
+            return jsonify({'error': 'No flights found for the given parameters.'}), 404
 
-            }
-            for flight in flights_with_airports_arr
-        ]
+        flights_json = []
 
-        ticket = db.session.query(
-            Ticket
-        ).filter(
-            Ticket.flight_id == json_flights[0]["flight_id"]
-        ).all()
-
-        json_tickets = [
-            {
-                "price":ticket[0].price
-            }
-        ]
-
-        flights_json = [
-            {
-                "flight_id":json_flights[0]["flight_id"],
-                "departure_airport":json_airports_dep[0]["airport_name"],
-                "departure_city":json_airports_dep[0]["city_name"],
-                "arrival_airport": json_airports_arr[0]["airport_name"],
-                "arrival_city": json_airports_arr[0]["city_name"],
-                "distance":json_flights[0]["distance"],
-                "available_seats":json_flights[0]["available_seats"],
-                "ticket_price":json_tickets[0]["price"]
-            }
-        ]
+        for flight in flights:
+            flights_json.append({
+                    "flight_id":flight.flight_id,
+                    "departure_airport":dep_airport.airport_name,
+                    "departure_city":dep_city_name,
+                    "arrival_airport":arr_airport.airport_name,
+                    "arrival_city":arr_city_name,
+                    "distance":flight.distance,
+                    "available_seats":flight.available_seats
+                }
+            )
 
         return jsonify(flights_json), 200
+    except ValueError as e:
+        return jsonify({'error': 'Invalid date format.'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -136,3 +100,35 @@ def get_city():
     if q:
        results = City.query.filter(City.city_name.ilike(f"%{q}%")).order_by(City.city_name.desc()).limit(6).all()
     return jsonify(results)
+
+
+@app.route("/tickets", methods=["GET"])
+def get_tickets():
+    try:
+        flightid = request.args.get("flightId")
+
+
+        tickets = db.session.query(
+            Ticket
+        ).filter(
+            Ticket.flight_id == flightid,
+            Ticket.is_bought == 1
+        ).all()
+
+        json_tickets = [
+            {
+                "ticket_id": ticket.ticket_id,
+                "ticket_class": ticket.ticket_class,
+                "row": ticket.row,
+                "column": ticket.column,
+                "price": ticket.price
+            }
+            for ticket in tickets
+        ]
+
+        return jsonify(json_tickets)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
