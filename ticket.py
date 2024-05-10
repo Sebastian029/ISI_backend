@@ -12,11 +12,12 @@ def get_tickets():
             Ticket
         ).filter(
             Ticket.flight_id == flightid,
-            Ticket.is_bought == 1
+            Ticket.is_bought == 0
         ).all()
 
         json_tickets = [
             {
+                "ticket_id":ticket.ticket_id,
                 "ticket_class": ticket.ticket_class,
                 "row": ticket.row,
                 "column": ticket.column,
