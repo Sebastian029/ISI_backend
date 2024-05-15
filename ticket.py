@@ -68,3 +68,45 @@ def buy_tickets(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/delete_ticket/<int:ticket_id>", methods=["DELETE"])
+@token_required
+@role_required('admin')
+def delete_ticket(current_user, ticket_id):
+    try:
+        ticket = Ticket.query.get(ticket_id)
+        if ticket:
+            if ticket.is_bought == 0:  
+                db.session.delete(ticket)
+                db.session.commit()
+                return jsonify({"message": "Bilet został usunięty pomyślnie."}), 200
+            else:
+                return jsonify({"message": "Nie można usunąć biletu, który został już kupiony."}), 400
+        else:
+            return jsonify({"message": "Nie znaleziono biletu o podanym ID."}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Wystąpił błąd podczas usuwania biletu: " + str(e)}), 400
+    
+
+@app.route("/update_ticket_price/<int:ticket_id>", methods=["PATCH"])
+@token_required
+@role_required('admin')
+def update_ticket_price(current_user, ticket_id):
+    try:
+        data = request.json
+        new_price = data.get("new_price")
+
+        if not new_price:
+            return jsonify({"message": "Nie podano nowej ceny biletu."}), 400
+
+        ticket = Ticket.query.get(ticket_id)
+        if ticket:
+            ticket.price = new_price
+            db.session.commit()
+            return jsonify({"message": "Cena biletu została zaktualizowana pomyślnie."}), 200
+        else:
+            return jsonify({"message": "Nie znaleziono biletu o podanym ID."}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Wystąpił błąd podczas aktualizowania ceny biletu: " + str(e)}), 400

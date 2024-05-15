@@ -6,7 +6,7 @@ from user_routes import *
 from airport import get_ports
 from plane import get_planes
 from airline import get_airlines
-from ticket import get_tickets
+from ticket import get_tickets,delete_ticket,update_ticket_price
 from flight import register_flight
 
 if __name__ == "__main__":
