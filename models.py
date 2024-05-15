@@ -15,7 +15,6 @@ class Country(db.Model):
 class City(db.Model):
     city_id = db.Column(db.Integer, primary_key=True)
     city_name = db.Column(db.String(255), nullable=False)
-    airport_code = db.Column(db.String(10), nullable=False)
     country_id = db.Column(db.Integer, db.ForeignKey('country.country_id'), nullable=False)
     country = db.relationship('Country', backref='cities')
 
