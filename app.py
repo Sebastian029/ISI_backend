@@ -1,13 +1,15 @@
-from flask import Flask
 from config import app, db
-from order_routes import *
-from other_routes import get_flights_with_airports
-from user_routes import *
-from airport import get_ports
-from plane import get_planes
-from airline import get_airlines
-from ticket import get_tickets,delete_ticket,update_ticket_price
-from Flight.flight import register_flight
+from services.userService import *
+from services.airlineService import *
+from services.planeService import *
+from services.orderService import *
+from services.airportService import *
+from services.ticketService import *
+from services.flightService import *
+
+@app.route("/")
+def init():
+    return "Hello WORLD"
 
 if __name__ == "__main__":
     with app.app_context():

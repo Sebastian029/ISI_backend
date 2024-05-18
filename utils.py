@@ -2,7 +2,7 @@ import jwt
 from functools import wraps
 from flask import request, jsonify
 from config import app
-from models import User
+from models.user import User
 from datetime import datetime, timedelta
 
 def token_required(f):
