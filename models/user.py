@@ -4,7 +4,8 @@ import uuid
 from models.role import Role
 from models.roleuser import Role_Users
 from models.order import Order
-
+from models.privilege import Privilege
+from models.privilege_users import Privilege_Users
 
 class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
@@ -14,7 +15,8 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password= db.Column(db.String(255), nullable=False)
-    
+   
+    privileges = db.relationship('Privilege', secondary='privilege_users', backref='roled')
     roles = db.relationship('Role', secondary='role_users', backref='roled')
     users = db.relationship('Order', backref='user', lazy=True)
 

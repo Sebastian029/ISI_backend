@@ -38,6 +38,18 @@ def role_required(role_name):
         return authorize
     return decorator
 
+def privilege_required(privilege_name):
+    def decorator(func):
+        @wraps(func)
+        def authorize(current_user, *args, **kwargs):
+            privileges = current_user.privileges
+            list_privileges = [privilege.name for privilege in privileges]
+            if privilege_name not in list_privileges:
+                return jsonify({'message': 'privilege is invalid'})
+            return func(current_user, *args, **kwargs)
+        return authorize
+    return decorator
+
 def generate_jwt_token(public_id):
     expiration_time = datetime.utcnow() + timedelta(minutes=15)
     

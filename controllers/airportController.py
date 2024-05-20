@@ -25,6 +25,8 @@ def get_cities_aiports():
     json_city_airports = [
             {
                 "airport": city.city_name + " : " + airport.airport_name,
+                "airport_id": airport.airport_id,
+                "city_id": city.city_id
             }
             for airport, city in results
         ]
