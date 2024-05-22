@@ -1,9 +1,11 @@
 from config import app, db
 from controllers.airportController import *
 from flask import  jsonify
+from utils import token_required
 
 @app.route("/airports", methods=["GET"])
-def get_airports():
+@token_required
+def get_airports(current_user):
     airports = get_all_airports_json()
     return jsonify(airports)
 

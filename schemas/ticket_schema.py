@@ -6,3 +6,4 @@ class TicketData(BaseModel):
 
 class TicketBuyModel(BaseModel):
     tickets: List[TicketData]
+    paymentMethod: str

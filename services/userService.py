@@ -1,10 +1,11 @@
-from flask import request, jsonify
+from flask import request, jsonify, url_for
 from config import app, db
 from controllers.userController import get_user_by_email, get_user_by_number, create_user, check_password_controller,get_user,update_user,get_all_users_json, delete_user
 from controllers.roleController import all_get_role
-from utils import token_required, generate_jwt_token
+from utils import *
 from schemas.user_schema import UserRegistrationModel, UserLoginModel  
 from pydantic import ValidationError
+from authlib.integrations.flask_client import OAuth
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -41,10 +42,10 @@ def login():
 
     user = get_user_by_email(data.email)
     if check_password_controller(user, data.password):
-        roles = all_get_role(user)
-        token = generate_jwt_token(user.public_id)
+        access_token = generate_access_token(user.public_id)
+        refresh_token = generate_refresh_token(user.public_id)
 
-        return jsonify({'token': token, 'roles': roles})
+        return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
     
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
@@ -81,3 +82,42 @@ def delete_contact(user_id):
 def get_contacts(current_user):
     users = get_all_users_json()
     return jsonify(users)
+
+@app.route('/logout', methods=['DELETE'])
+def logout():
+    token = None
+    if 'x-access-tokens' in request.headers:
+        token = request.headers['x-access-tokens']
+        
+    refresh_token = None    
+    if 'x-refresh-tokens' in request.headers:
+        refresh_token = request.headers['x-refresh-tokens']
+    if revoke_token(refresh_token,token):
+        return jsonify({"message": "Refresh token revoked"})
+    return jsonify({"message": "Invalid refresh token"}), 400
+
+@app.route('/refresh', methods=['POST'])
+def refresh():
+    refresh_token = None
+    if 'x-refresh-tokens' in request.headers:
+        refresh_token = request.headers['x-refresh-tokens']
+
+    data = jwt.decode(refresh_token, app.config['SECRET_KEY'], algorithms=["HS256"])
+    current_user = User.query.filter_by(public_id=data['public_id']).first()
+    if current_user is None:
+        return jsonify({'message': 'Invalid or expired refresh token'}), 401
+
+    stored_token = RefreshToken.query.filter_by(token=refresh_token, revoked=False).first()
+    if not stored_token:
+        return jsonify({'message': 'Invalid or expired refresh token'}), 401
+
+    access_token = generate_access_token(current_user.public_id)
+
+    return jsonify({'access_token': access_token})
+
+
+
+# @app.route('/login')
+# def login():
+#     redirect_uri = url_for('authorize', _external=True)
+#     return google.authorize_redirect(redirect_uri)

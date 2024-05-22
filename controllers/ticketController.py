@@ -2,6 +2,7 @@ from models.ticket import Ticket
 from controllers.planeController import *
 from models.order import Order
 from config import db
+from datetime import datetime
 
 
 def register_tickets_bis(plane_id, new_flight):
@@ -68,7 +69,7 @@ def get_tickets_id(flightid):
     ]
     return json_tickets
 
-def buy_tickets_service(current_user, ticket_ids):
+def buy_tickets_service(current_user, ticket_ids,paymentMethod):
     if not ticket_ids:
         return {"message": "No tickets provided in the request body"}, 400
 
@@ -79,7 +80,7 @@ def buy_tickets_service(current_user, ticket_ids):
         total_price = 0
 
         for ticket_id in ticket_ids:
-            ticket = Ticket.query.get(ticket_id)
+            ticket = get_ticket(ticket_id)
 
             if ticket:
                 ticket_price = ticket.price  
@@ -91,6 +92,8 @@ def buy_tickets_service(current_user, ticket_ids):
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
 
         new_order.full_price = total_price
+        new_order.paymentMethod = paymentMethod
+        new_order.orderDate = datetime.now()
 
         db.session.commit()
         return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id}, 200

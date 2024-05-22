@@ -6,6 +6,8 @@ from services.orderService import *
 from services.airportService import *
 from services.ticketService import *
 from services.flightService import *
+from services.paymentService import *
+
 
 @app.route("/")
 def init():

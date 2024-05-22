@@ -21,3 +21,57 @@ def register_order(current_user):
     return jsonify({'message' : 'New order created'})
 
 
+@app.route('/order/<int:order_id>', methods=['GET'])
+def get_order_tickets_route(order_id):
+    try:
+        order = get_order_tickets(order_id)
+        return order
+    except ValueError as e:
+        print(f"Error: {e}")  
+        return jsonify({'error': 'Order not found'}), 404
+    except Exception as e:
+        print(f"Unexpected error: {e}")  
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
+@app.route('/orders/user/<int:user_id>', methods=['GET'])
+def get_orders_tickets_route(user_id):
+    try:
+        orders = get_orders_user_tickets(user_id)
+        return orders
+    except ValueError as e:
+        print(f"Error: {e}")  
+        return jsonify({'error': 'Orders not found'}), 404
+    except Exception as e:
+        print(f"Unexpected error: {e}")  
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
+@app.route('/orders/transfer', methods=['GET'])
+def get_orders_transfer_route():
+    try:
+        orders = get_transfer_uncompleted_orders()
+        return orders
+    except ValueError as e:
+        print(f"Error: {e}")  
+        return jsonify({'error': 'Orders not found'}), 404
+    except Exception as e:
+        print(f"Unexpected error: {e}")  
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+
+
+@app.route('/order/confirm/<int:order_id>', methods=['GET'])
+def confirm_order_route(order_id):
+    try:
+        order = get_order_by_id(order_id)
+        if order.is_payment_completed == 1:
+            message = 'Payment is already completed.'
+        else:
+            order.is_payment_completed = 1
+            db.session.commit()  
+            message = 'Payment has been completed successfully.'
+        return jsonify({'message': message})
+    except ValueError as e:
+        print(f"Error: {e}") 
+        return jsonify({'error': 'Order not found'}), 404
+    except Exception as e:
+        print(f"Unexpected error: {e}")  
+        return jsonify({'error': 'An unexpected error occurred'}), 500
