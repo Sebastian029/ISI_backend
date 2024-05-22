@@ -127,34 +127,25 @@ def login_with_google():
     redirect_uri = url_for('authorize_google', _external=True)
     state = generate_state()  # Generowanie unikalnego stanu
     session['oauth_state'] = state  # Zapisywanie stanu w sesji
+    app.logger.info(f"Generated state: {state}")
     return google.authorize_redirect(redirect_uri, state=state)
 
 def generate_state():
-
     return secrets.token_urlsafe(16)
 
-@app.route('/authorize/google', methods=['GET', 'POST'])
+@app.route('/authorize/google', methods=['GET'])
 def authorize_google():
-    token = google.authorize_access_token()
-    user_info = google.get('userinfo').json()
-
+    # Sprawdź, czy `state` istnieje w sesji i czy jest zgodne z wartością otrzymaną w żądaniu
     if 'oauth_state' not in session or session['oauth_state'] != request.args.get('state'):
         return 'CSRF Warning! State not equal in request and response.', 400
-
-    email = user_info['email']
-    user = get_user_by_email(email)
     
-
-    if not user:
-        user = create_user(
-            firstName=user_info.get('given_name', ''),
-            lastName=user_info.get('family_name', ''),
-            email=user_info['email'],
-            phone_number = user_info.get('phone_number', ''),
-            password= 'abc'
-        )
-
-    access_token = generate_access_token(user.public_id)
-    refresh_token = generate_refresh_token(user.public_id)
-
-    return jsonify({'access_token': 'jol'})
+    # Jeśli `state` jest zgodne, usuń `state` z sesji
+    session.pop('oauth_state', None)
+    
+    # Kontynuuj proces uwierzytelniania
+    token = google.authorize_access_token()
+    user_info = google.parse_id_token(token)
+    
+    # Tutaj możesz dokończyć proces logowania użytkownika
+    
+    return jsonify(user_info)

@@ -1,12 +1,12 @@
 from pydantic import BaseModel, field_validator
 
 class FlightRegisterSchema(BaseModel):
-    departure_airport_id: str
-    arrive_airport_id: str
+    departure_airport_id: int
+    arrive_airport_id: int
     travel_time: str
-    distance: float
-    plane_id: str
-    airline_id: str
+    distance: float 
+    plane_id: int
+    airline_id: int
     data_lotu: str
 
     @field_validator('distance')
@@ -24,8 +24,8 @@ class FlightRegisterSchema(BaseModel):
         return v
     
 class FlightSearchSchema(BaseModel):
-    departure_airport_id: str
-    arrive_airport_id: str
+    departure_airport_id: int
+    arrive_airport_id: int
     data_lotu: str
 
     @field_validator('data_lotu')
