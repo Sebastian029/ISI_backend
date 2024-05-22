@@ -38,8 +38,5 @@ google = oauth.register(
     client_secret='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',
     access_token_url='https://accounts.google.com/o/oauth2/token',
     authorize_url='https://accounts.google.com/o/oauth2/auth',
-    authorize_params=None,
-    authorize_refresh_url=None,
-    base_url='https://www.googleapis.com/oauth2/v1/',
     client_kwargs={'scope': 'openid profile email https://www.googleapis.com/auth/user.phonenumbers.read'}
 )

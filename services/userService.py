@@ -1,11 +1,12 @@
-from flask import request, jsonify, url_for
-from config import app, db
+from flask import request, jsonify, url_for,session
+from config import app, db,google
 from controllers.userController import get_user_by_email, get_user_by_number, create_user, check_password_controller,get_user,update_user,get_all_users_json, delete_user
 from controllers.roleController import all_get_role
 from utils import *
 from schemas.user_schema import UserRegistrationModel, UserLoginModel  
 from pydantic import ValidationError
 from authlib.integrations.flask_client import OAuth
+import secrets
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -49,6 +50,9 @@ def login():
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token, 'roles': roles, 'name': user.name, 'surname':user.surname}), 200
     
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
+
+
+
 
 
 @app.route("/update_email/<int:user_id>", methods=["PATCH"])
@@ -118,7 +122,39 @@ def refresh():
 
 
 
-# @app.route('/login')
-# def login():
-#     redirect_uri = url_for('authorize', _external=True)
-#     return google.authorize_redirect(redirect_uri)
+@app.route('/login/google', methods=['POST'])
+def login_with_google():
+    redirect_uri = url_for('authorize_google', _external=True)
+    state = generate_state()  # Generowanie unikalnego stanu
+    session['oauth_state'] = state  # Zapisywanie stanu w sesji
+    return google.authorize_redirect(redirect_uri, state=state)
+
+def generate_state():
+
+    return secrets.token_urlsafe(16)
+
+@app.route('/authorize/google', methods=['GET', 'POST'])
+def authorize_google():
+    token = google.authorize_access_token()
+    user_info = google.get('userinfo').json()
+
+    if 'oauth_state' not in session or session['oauth_state'] != request.args.get('state'):
+        return 'CSRF Warning! State not equal in request and response.', 400
+
+    email = user_info['email']
+    user = get_user_by_email(email)
+    
+
+    if not user:
+        user = create_user(
+            firstName=user_info.get('given_name', ''),
+            lastName=user_info.get('family_name', ''),
+            email=user_info['email'],
+            phone_number = user_info.get('phone_number', ''),
+            password= 'abc'
+        )
+
+    access_token = generate_access_token(user.public_id)
+    refresh_token = generate_refresh_token(user.public_id)
+
+    return jsonify({'access_token': 'jol'})

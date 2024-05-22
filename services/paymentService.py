@@ -1,20 +1,20 @@
 from flask import jsonify, request, url_for
-from config import app
+from config import app,db
 import paypalrestsdk
 from datetime import datetime
+from services.orderService import *
 
 @app.route('/create-payment', methods=['POST'])
 def create_payment():
     data = request.json
 
-    # Pobierz dane zamówienia z żądania
     user_id = data.get('user_id')
     full_price = data.get('full_price')
     is_payment_completed = data.get('is_payment_completed', False)
     paymentMethod = data.get('paymentMethod')
     orderDate = data.get('orderDate', datetime.now().isoformat())
+    order_id = data.get('order_id')
 
-    # Pobierz bilety z żądania
     tickets_data = data.get('tickets', [])
 
     items = []
@@ -23,7 +23,7 @@ def create_payment():
             "name": f"Flight {ticket.get('flight_id')} - {ticket.get('ticket_class')}",
             "sku": str(ticket.get('ticket_id')),
             "price": str(ticket.get('price')),
-            "currency": "USD",  # Zakładamy, że waluta jest USD
+            "currency": "PLN", 
             "quantity": 1
         })
 
@@ -34,8 +34,8 @@ def create_payment():
             "payment_method": "paypal"
         },
         "redirect_urls": {
-            "return_url": url_for('execute_payment', _external=True),
-            "cancel_url": url_for('payment_cancelled', _external=True)
+            "return_url": url_for('execute_payment', order_id=order_id, _external=True),
+            "cancel_url": url_for('payment_cancelled', order_id=order_id, _external=True)
         },
         "transactions": [{
             "item_list": {
@@ -43,13 +43,12 @@ def create_payment():
             },
             "amount": {
                 "total": str(full_price),
-                "currency": "USD"
+                "currency": "PLN"
             },
             "description": f"Order payment for user {user_id}"
         }]
     })
 
-    # Utwórz płatność w PayPal
     if payment.create():
         for link in payment.links:
             if link.rel == "approval_url":
@@ -63,10 +62,19 @@ def create_payment():
 def execute_payment():
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
+    order_id = request.args.get('order_id')
+
+    if not order_id:
+        return jsonify({"error": "Order ID not provided"}), 400
 
     payment = paypalrestsdk.Payment.find(payment_id)
 
     if payment.execute({"payer_id": payer_id}):
+
+        order = get_order_by_id(order_id)
+        if order:
+            order.is_payment_completed = True
+            db.session.commit()
         return jsonify({"success": True})
     else:
         return jsonify({"error": payment.error}), 400
