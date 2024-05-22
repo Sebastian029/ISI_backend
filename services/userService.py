@@ -42,10 +42,11 @@ def login():
 
     user = get_user_by_email(data.email)
     if check_password_controller(user, data.password):
+        roles = all_get_role(user)
         access_token = generate_access_token(user.public_id)
         refresh_token = generate_refresh_token(user.public_id)
 
-        return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
+        return jsonify({'access_token': access_token, 'refresh_token': refresh_token, 'roles': roles, 'name': user.name, 'surname':user.surname}), 200
     
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
