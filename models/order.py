@@ -11,7 +11,7 @@ class Order(db.Model):
 
     tickets = db.relationship('Ticket', backref='order', lazy=True)
 
-    def __init__(self, user_id, paymentMethod, orderDate, full_price=0.0, is_payment_completed=False,):
+    def __init__(self, user_id, paymentMethod, orderDate, full_price=0.0, is_payment_completed=False):
         self.user_id = user_id
         self.full_price = full_price
         self.is_payment_completed = is_payment_completed

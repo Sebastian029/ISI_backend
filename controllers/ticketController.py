@@ -74,7 +74,7 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
         return {"message": "No tickets provided in the request body"}, 400
 
     try:
-        new_order = Order(user_id=current_user.user_id, full_price=0, is_payment_completed=0)
+        new_order = Order(user_id = current_user.user_id, full_price = 0, is_payment_completed = 0, paymentMethod = paymentMethod, orderDate = datetime.now() )
         db.session.add(new_order)
 
         total_price = 0
@@ -92,8 +92,6 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
 
         new_order.full_price = total_price
-        new_order.paymentMethod = paymentMethod
-        new_order.orderDate = datetime.now()
 
         db.session.commit()
         return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id}, 200
