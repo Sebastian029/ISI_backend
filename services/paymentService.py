@@ -1,18 +1,14 @@
-from flask import jsonify, request, url_for
+from flask import jsonify, request, url_for, redirect
 from config import app,db
 import paypalrestsdk
 from datetime import datetime
 from services.orderService import *
 
+
 @app.route('/create-payment', methods=['POST'])
 def create_payment():
     data = request.json
-
-    user_id = data.get('user_id')
     full_price = data.get('full_price')
-    is_payment_completed = data.get('is_payment_completed', False)
-    paymentMethod = data.get('paymentMethod')
-    orderDate = data.get('orderDate', datetime.now().isoformat())
     order_id = data.get('order_id')
 
     tickets_data = data.get('tickets', [])
@@ -44,8 +40,7 @@ def create_payment():
             "amount": {
                 "total": str(full_price),
                 "currency": "PLN"
-            },
-            "description": f"Order payment for user {user_id}"
+            }
         }]
     })
 
@@ -75,10 +70,12 @@ def execute_payment():
         if order:
             order.is_payment_completed = True
             db.session.commit()
-        return jsonify({"success": True})
+        return redirect('http://localhost:5173/success')
     else:
         return jsonify({"error": payment.error}), 400
-    
+
+
 @app.route('/payment-cancelled', methods=['GET'])
 def payment_cancelled():
-    return jsonify({"success": False, "message": "Payment cancelled"})
+    # return jsonify({"success": False, "message": "Payment cancelled"})
+    return redirect('http://localhost:5173/cancell')
