@@ -60,6 +60,7 @@ def get_tickets_id(flightid):
     json_tickets = [
         {
             "ticket_id":ticket.ticket_id,
+            "flight_id":ticket.flight_id,
             "ticket_class": ticket.ticket_class,
             "row": ticket.row,
             "column": ticket.column,
@@ -94,7 +95,7 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
         new_order.full_price = total_price
 
         db.session.commit()
-        return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id}, 200
+        return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id, "full_price": new_order.full_price}, 200
     except Exception as e:
         db.session.rollback()
         return {"message": f"An error occurred: {str(e)}"}, 500
