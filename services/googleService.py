@@ -20,7 +20,7 @@ def get_google_provider_cfg():
 
 
 
-@app.route("/login/google", methods=['POST'])
+@app.route("/login/google", methods=['GET', 'POST'])
 def login_google():
     # Find out what URL to hit for Google login
     google_provider_cfg = get_google_provider_cfg()
@@ -34,25 +34,24 @@ def login_google():
     return redirect(request_uri)
 
 
-@app.route("/login/google/callback", methods=['GET','POST'])
+@app.route("/login/google/callback", methods=['GET', 'POST'])
 def callback():
     code = request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
     token_url, headers, body = client.prepare_token_request(
-    token_endpoint,
-    authorization_response=request.url,
-    redirect_url=request.base_url,
-    code=code
+        token_endpoint,
+        authorization_response=request.url,
+        redirect_url=request.base_url,
+        code=code
     )
     token_response = requests.post(
-    token_url,
-    headers=headers,
-    data=body,
-    auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+        token_url,
+        headers=headers,
+        data=body,
+        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
     )
-
 
     client.parse_request_body_response(json.dumps(token_response.json()))
 
@@ -64,7 +63,7 @@ def callback():
         users_email = userinfo_response.json()["email"]
         users_name = userinfo_response.json()["given_name"]
         users_lastname = userinfo_response.json()["family_name"]
-    else:   
+    else:
         return "User email not available or not verified by Google.", 400
 
     user = get_user_by_email(users_email)
@@ -73,9 +72,9 @@ def callback():
         user = User(
             name=users_name,
             surname=users_lastname,
-            phone_number="", 
+            phone_number="",
             email=users_email,
-            password="password"  
+            password="password"
         )
         db.session.add(user)
         db.session.commit()
@@ -83,6 +82,6 @@ def callback():
     # Generate tokens
     access_token = generate_access_token(user.public_id)
     refresh_token = generate_refresh_token(user.public_id)
-    
-    return jsonify({"access_token": access_token , "refresh_token": refresh_token})
-   
+
+    # Redirect to React app with tokens
+    return redirect(f"http://localhost:5173?access_token={access_token}&refresh_token={refresh_token}")
