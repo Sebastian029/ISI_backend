@@ -33,10 +33,11 @@ def get_order_tickets_route(order_id):
         print(f"Unexpected error: {e}")  
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
-@app.route('/orders/user/<int:user_id>', methods=['GET'])
-def get_orders_tickets_route(user_id):
+@app.route('/orders/user/', methods=['GET'])
+@token_required
+def get_orders_tickets_route(current_user):
     try:
-        orders = get_orders_user_tickets(user_id)
+        orders = get_orders_user_tickets(current_user.user_id)
         return orders
     except ValueError as e:
         print(f"Error: {e}")  
@@ -75,3 +76,17 @@ def confirm_order_route(order_id):
     except Exception as e:
         print(f"Unexpected error: {e}")  
         return jsonify({'error': 'An unexpected error occurred'}), 500
+    
+# @app.route('/transfer/data', methods=['POST'])
+# def get_transfer_data_route():
+#     try:
+#         data = request.json
+#         order_id = data.get('order_id')
+#         order = get_order_by_id(order_id)
+#         return jsonify({'full price':order.full_price, })
+#     except ValueError as e:
+#         print(f"Error: {e}")  
+#         return jsonify({'error': 'Orders not found'}), 404
+#     except Exception as e:
+#         print(f"Unexpected error: {e}")  
+#         return jsonify({'error': 'An unexpected error occurred'}), 500

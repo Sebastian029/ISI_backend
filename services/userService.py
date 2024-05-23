@@ -6,7 +6,8 @@ from utils import *
 from schemas.user_schema import UserRegistrationModel, UserLoginModel  
 from pydantic import ValidationError
 from authlib.integrations.flask_client import OAuth
-import secrets
+from oauthlib.oauth2 import WebApplicationClient
+import requests
 
 
 @app.route("/register", methods=["POST"])
@@ -120,4 +121,5 @@ def refresh():
     access_token = generate_access_token(current_user.public_id)
 
     return jsonify({'access_token': access_token})
+
 

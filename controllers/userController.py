@@ -1,14 +1,18 @@
 from models.user import User
 from config import db
 from controllers.roleController import get_role
+from controllers.privilegeController import get_privilages
 
 def create_user( firstName, lastName, phone_number, email, password):
     new_user = User(name=firstName, surname=lastName, phone_number=phone_number, email=email, password=password)
-    role_id = 2
-    role = get_role(role_id)
+    role = get_role(2)
     if role:
         new_user.roles.append(role)
-    
+    privilages = get_privilages()
+
+    if privilages:
+        for privilage in privilages:
+            new_user.privileges.append(privilage)
     db.session.add(new_user)
     db.session.commit()
     return new_user
@@ -34,6 +38,13 @@ def get_all_users_json():
     if not users:
         return []
     users = [user.to_json() for user in users]
+    return users
+
+def get_data_users_json():
+    users = User.query.all()
+    if not users:
+        return []
+    users = [user.to_json_privileges() for user in users]
     return users
 
 def update_user(id, public_id, name, surname, phone_number, email):

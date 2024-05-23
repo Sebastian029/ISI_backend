@@ -31,20 +31,6 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
    return decorator
 
-
-
-
-def revoke_token(token):
-    refresh_token = RefreshToken.query.filter_by(token=token).first()
-    if refresh_token:
-        refresh_token.revoked = True
-        db.session.commit()
-        return True
-    return False
-
-
-
-
 def generate_access_token(public_id):
     payload = {
         'exp': datetime.utcnow() + app.config['ACCESS_TOKEN_EXPIRES'],
@@ -53,27 +39,22 @@ def generate_access_token(public_id):
     }
     return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
-
-
 def generate_refresh_token(public_id):
     payload = {
         'exp': datetime.utcnow() + app.config['REFRESH_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
         'public_id': public_id
     }
-    print(datetime.now)
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-    print(public_id)
     refresh_token = RefreshToken(
         token=token,
         public_id=public_id,
-        expires=datetime.now() + app.config['REFRESH_TOKEN_EXPIRES'],
+        expires=datetime.utcnow() + app.config['REFRESH_TOKEN_EXPIRES'],
         revoked=0
     )
     db.session.add(refresh_token)
     db.session.commit()
     return token
-
 
 def revoke_token(token, secondToken):
     refresh_token = RefreshToken.query.filter_by(token=token).first()
@@ -84,10 +65,6 @@ def revoke_token(token, secondToken):
         return True
     return False
 
-
-
-
-
 # def decode_token(token):
 #     try:
 #         payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
@@ -97,20 +74,17 @@ def revoke_token(token, secondToken):
 #     except jwt.InvalidTokenError:
 #         return None
 
-
-
-# def privilege_required(privilege_name):
-#     def decorator(func):
-#         @wraps(func)
-#         def authorize(current_user, *args, **kwargs):
-#             privileges = current_user.privileges
-#             list_privileges = [privilege.name for privilege in privileges]
-#             if privilege_name not in list_privileges:
-#                 return jsonify({'message': 'privilege is invalid'})
-#             return func(current_user, *args, **kwargs)
-#         return authorize
-#     return decorator
-
+def privilege_required(privilege_name):
+    def decorator(func):
+        @wraps(func)
+        def authorize(current_user, *args, **kwargs):
+            privileges = current_user.privileges
+            list_privileges = [privilege.name for privilege in privileges]
+            if privilege_name not in list_privileges:
+                return jsonify({'message': 'privilege is invalid'})
+            return func(current_user, *args, **kwargs)
+        return authorize
+    return decorator
 
 def role_required(role_name):
     def decorator(func):

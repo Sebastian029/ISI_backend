@@ -6,7 +6,6 @@ import paypalrestsdk
 from authlib.integrations.flask_client import OAuth
 from datetime import timedelta
 from flask_wtf.csrf import CSRFProtect
-import os
 
 app = Flask(__name__)
 CORS(app)

@@ -44,3 +44,13 @@ class User(db.Model):
             "email": self.email,
             "password": self.password 
         }
+
+    def to_json_privileges(self):
+        return {
+            "public_id": self.public_id,
+            "name": self.name,
+            "surname": self.surname,
+            "phone_number": self.phone_number,
+            "email": self.email,
+            "privileges": [privilege.to_json() for privilege in self.privileges]
+        }
