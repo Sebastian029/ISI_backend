@@ -99,7 +99,9 @@ def get_flights_with_airports():
                     "arrival_airport":arr_airport.airport_name,
                     "arrival_city":arr_city_name,
                     "distance":flight.distance,
-                    "available_seats":flight.available_seats
+                    "available_seats":flight.available_seats,
+                    "travel_time": flight.travel_time.strftime('%H:%M:%S'),
+                    "data_lotu": flight.data_lotu
                 }
             )
 

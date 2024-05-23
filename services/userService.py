@@ -1,4 +1,4 @@
-from flask import request, jsonify, url_for,session
+from flask import request, jsonify, url_for,session,redirect,json
 from config import app, db,google
 from controllers.userController import get_user_by_email, get_user_by_number, create_user, check_password_controller,get_user,update_user,get_all_users_json, delete_user
 from controllers.roleController import all_get_role
@@ -7,6 +7,7 @@ from schemas.user_schema import UserRegistrationModel, UserLoginModel
 from pydantic import ValidationError
 from authlib.integrations.flask_client import OAuth
 import secrets
+
 
 @app.route("/register", methods=["POST"])
 def register_user():
@@ -120,32 +121,3 @@ def refresh():
 
     return jsonify({'access_token': access_token})
 
-
-
-@app.route('/login/google', methods=['POST'])
-def login_with_google():
-    redirect_uri = url_for('authorize_google', _external=True)
-    state = generate_state()  # Generowanie unikalnego stanu
-    session['oauth_state'] = state  # Zapisywanie stanu w sesji
-    app.logger.info(f"Generated state: {state}")
-    return google.authorize_redirect(redirect_uri, state=state)
-
-def generate_state():
-    return secrets.token_urlsafe(16)
-
-@app.route('/authorize/google', methods=['GET'])
-def authorize_google():
-    # Sprawdź, czy `state` istnieje w sesji i czy jest zgodne z wartością otrzymaną w żądaniu
-    if 'oauth_state' not in session or session['oauth_state'] != request.args.get('state'):
-        return 'CSRF Warning! State not equal in request and response.', 400
-    
-    # Jeśli `state` jest zgodne, usuń `state` z sesji
-    session.pop('oauth_state', None)
-    
-    # Kontynuuj proces uwierzytelniania
-    token = google.authorize_access_token()
-    user_info = google.parse_id_token(token)
-    
-    # Tutaj możesz dokończyć proces logowania użytkownika
-    
-    return jsonify(user_info)
