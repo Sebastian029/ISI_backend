@@ -1,21 +1,5 @@
 from models.user import User
 from config import db
-from controllers.roleController import get_role
-from controllers.privilegeController import get_privilages
-
-def create_user( firstName, lastName, phone_number, email, password):
-    new_user = User(name=firstName, surname=lastName, phone_number=phone_number, email=email, password=password)
-    role = get_role(2)
-    if role:
-        new_user.roles.append(role)
-    privilages = get_privilages()
-
-    if privilages:
-        for privilage in privilages:
-            new_user.privileges.append(privilage)
-    db.session.add(new_user)
-    db.session.commit()
-    return new_user
 
 def check_password_controller(user, password):
     return user.check_password(password)
@@ -39,6 +23,9 @@ def get_all_users_json():
         return []
     users = [user.to_json() for user in users]
     return users
+
+def get_user_by_public_id(public_id):
+    return User.query.filter_by(public_id=public_id).first()
 
 def get_data_users_json():
     users = User.query.all()

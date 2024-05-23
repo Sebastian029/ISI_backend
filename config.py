@@ -6,6 +6,9 @@ import paypalrestsdk
 from authlib.integrations.flask_client import OAuth
 from datetime import timedelta
 from flask_wtf.csrf import CSRFProtect
+import os 
+
+
 
 app = Flask(__name__)
 CORS(app)
@@ -31,16 +34,4 @@ paypalrestsdk.configure({
 
 
 
-oauth = OAuth(app)
-google = oauth.register(
-    name='google',
-    client_id='211513266277-n9ahn4rsqgnsdo6330roufqp3uev8lt3.apps.googleusercontent.com',
-    client_secret='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',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    client_kwargs={'scope': 'openid profile email https://www.googleapis.com/auth/user.phonenumbers.read'}
-)
-app.config['WTF_CSRF_ENABLED'] = False
-
-csrf = CSRFProtect(app)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

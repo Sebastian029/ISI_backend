@@ -1,13 +1,11 @@
-from flask import request, jsonify, url_for,session,redirect,json
-from config import app, db,google
-from controllers.userController import get_user_by_email, get_user_by_number, create_user, check_password_controller,get_user,update_user,get_all_users_json, delete_user
+from flask import request, jsonify 
+from config import app, db
+from controllers.userController import *
+from controllers.roleUserController import *
 from controllers.roleController import all_get_role
 from utils import *
 from schemas.user_schema import UserRegistrationModel, UserLoginModel  
 from pydantic import ValidationError
-from authlib.integrations.flask_client import OAuth
-from oauthlib.oauth2 import WebApplicationClient
-import requests
 
 
 @app.route("/register", methods=["POST"])
@@ -121,5 +119,4 @@ def refresh():
     access_token = generate_access_token(current_user.public_id)
 
     return jsonify({'access_token': access_token})
-
 
