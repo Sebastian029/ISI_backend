@@ -84,4 +84,5 @@ def callback():
     refresh_token = generate_refresh_token(user.public_id)
 
     # Redirect to React app with tokens
-    return redirect(f"http://localhost:5173?access_token={access_token}&refresh_token={refresh_token}")
+    rola = "user"
+    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={rola}")
