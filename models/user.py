@@ -58,3 +58,10 @@ class User(db.Model):
             "email": self.email,
             "privileges": [privilege.to_json() for privilege in self.privileges]
         }
+    
+    def to_json_search(self):
+        return {
+            "name": self.name,
+            "surname": self.surname,
+            "email": self.email
+        }

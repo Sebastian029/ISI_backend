@@ -4,7 +4,7 @@ from controllers.userController import *
 from controllers.roleUserController import *
 from controllers.roleController import all_get_role
 from utils import *
-from schemas.user_schema import UserRegistrationModel, UserLoginModel  
+from schemas.user_schema import *
 from pydantic import ValidationError
 
 
@@ -120,3 +120,35 @@ def refresh():
 
     return jsonify({'access_token': access_token})
 
+@app.route("/users_email", methods=["GET"])
+def get_contacts_email():
+    try:
+        name = request.args.get('name')
+        surname = request.args.get('surname')
+        email = request.args.get('email')
+
+        if email:
+            data = UserSearchModel(
+                name=name,
+                surname=surname,
+                email=email
+            )
+        else:
+            data = UserModel(
+                name=name,
+                surname=surname
+            )
+    except ValidationError as e:
+        return jsonify({"message": e.errors()}), 400
+    
+    if email:
+        users = get_users_by_email(data.name, data.surname ,data.email)
+    else:
+        users = get_users(data.name, data.surname)
+    return jsonify(users)
+
+@app.route("/users_search", methods=["GET"])
+def get_users_serach_route():
+    
+    users = get_users_search()
+    return jsonify(users)

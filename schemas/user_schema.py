@@ -13,3 +13,11 @@ class UserLoginModel(BaseModel):
     email: EmailStr
     password: str
 
+class UserSearchModel(BaseModel):
+    firstName: str
+    lastName: str
+    email: EmailStr
+
+class UserModel(BaseModel):
+    firstName: str
+    lastName: str

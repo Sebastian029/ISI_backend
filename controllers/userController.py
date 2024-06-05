@@ -24,6 +24,14 @@ def get_all_users_json():
     users = [user.to_json() for user in users]
     return users
 
+def get_users_search():
+    users = User.query.all()
+    if not users:
+        return []
+    users = [user.to_json_search() for user in users]
+    return users
+
+
 def get_user_by_public_id(public_id):
     return User.query.filter_by(public_id=public_id).first()
 
