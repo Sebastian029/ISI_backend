@@ -36,3 +36,11 @@ def get_flight_by_data_lotu(dep_airport, arr_airport, date ):
             Flight.arrive_airport_id == arr_airport.airport_id,
             Flight.data_lotu == date
         ).all()
+
+def get_flight(dep_airport, arr_airport):
+    return db.session.query(
+            Flight
+        ).filter(
+            Flight.departure_airport_id == dep_airport.airport_id,
+            Flight.arrive_airport_id == arr_airport.airport_id,
+        ).all()

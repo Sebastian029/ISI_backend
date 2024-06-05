@@ -10,6 +10,7 @@ class Order(db.Model):
     orderDate = db.Column(db.DateTime, nullable=False)
 
     tickets = db.relationship('Ticket', backref='order', lazy=True)
+    user = db.relationship('User', backref='orders', lazy=True)
 
     def __init__(self, user_id, paymentMethod, orderDate, full_price=0.0, is_payment_completed=False):
         self.user_id = user_id
@@ -27,4 +28,14 @@ class Order(db.Model):
             "paymentMethod": self.paymentMethod,
             "orderDate": self.orderDate,
             "tickets": [ticket.to_json() for ticket in self.tickets]
+        }
+    
+    def to_json_with_user(self):
+        return {
+            "order_id": self.order_id,
+            "full_price": self.full_price,
+            "is_payment_completed": self.is_payment_completed,
+            "paymentMethod": self.paymentMethod,
+            "orderDate": self.orderDate,
+            "user": self.user.to_json_order() if self.user else None,
         }

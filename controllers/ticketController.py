@@ -54,7 +54,6 @@ def get_tickets_id(flightid):
             Ticket
         ).filter(
             Ticket.flight_id == flightid,
-            Ticket.is_bought == 0
         ).all()
     
     json_tickets = [
@@ -62,6 +61,7 @@ def get_tickets_id(flightid):
             "ticket_id":ticket.ticket_id,
             "flight_id":ticket.flight_id,
             "ticket_class": ticket.ticket_class,
+            "is_bought": ticket.is_bought,
             "row": ticket.row,
             "column": ticket.column,
             "price": ticket.price

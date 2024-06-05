@@ -34,7 +34,7 @@ def get_transfer_uncompleted_orders():
     orders = Order.query.filter_by(paymentMethod='transfer', is_payment_completed=False).all()
     if not orders:
         raise ValueError(f"Orders not found")
-    orders_json = [order.to_json() for order in orders]
+    orders_json = [order.to_json_with_user() for order in orders]
     return orders_json
 
 

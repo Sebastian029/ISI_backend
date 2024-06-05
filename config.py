@@ -11,7 +11,7 @@ import os
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
 
 
 app.config['SECRET_KEY']='daaa9975582b77c920be486c44667846'

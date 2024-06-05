@@ -32,3 +32,7 @@ class FlightSearchSchema(BaseModel):
     def flight_date_format(cls, v):
         # Dodaj tutaj logikę walidacji formatu daty lotu, np. sprawdzając czy jest w formacie YYYY-MM-DD
         return v
+    
+class FlightSearchSchemaWithoutDate(BaseModel):
+    departure_airport_id: int
+    arrive_airport_id: int

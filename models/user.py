@@ -3,7 +3,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 from models.role import Role
 from models.roleuser import Role_Users
-from models.order import Order
 from models.privilege import Privilege
 from models.privilege_users import Privilege_Users
 
@@ -18,7 +17,6 @@ class User(db.Model):
    
     privileges = db.relationship('Privilege', secondary='privilege_users', backref='roled')
     roles = db.relationship('Role', secondary='role_users', backref='roled')
-    users = db.relationship('Order', backref='user', lazy=True)
 
     def __init__(self, name, surname, phone_number, email, password):
         self.public_id = str(uuid.uuid4())
@@ -43,6 +41,12 @@ class User(db.Model):
             "phone_number": self.phone_number,
             "email": self.email,
             "password": self.password 
+        }
+    
+    def to_json_order(self):
+        return {
+            "name": self.name,
+            "surname": self.surname,
         }
 
     def to_json_privileges(self):
