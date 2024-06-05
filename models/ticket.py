@@ -7,7 +7,7 @@ class Ticket(db.Model):
     is_bought = db.Column(db.Boolean, nullable=False, default=False)  
     price = db.Column(db.Float, nullable=False)
     ticket_class = db.Column(db.String(50), nullable=False)
-    row = db.Column(db.String(2), nullable=False)
+    row = db.Column(db.Integer, nullable=False)
     column = db.Column(db.Integer, nullable=False)
 
     def to_json(self):

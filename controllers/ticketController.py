@@ -5,41 +5,39 @@ from config import db
 from datetime import datetime
 
 
-def register_tickets_bis(plane_id, new_flight):
-   
+def register_tickets(plane_id, new_flight):
     plane = get_plane_by_id(plane_id)
     rows_bis = plane.seat_rows_bis
     columns_bis = plane.seat_columns_bis
-
-    for row in range(1, rows_bis + 1):
-        for column in range(1, columns_bis + 1):
-            row_label =chr(ord('A') + row - 1) + chr(ord('A') + row - 1)  
-            new_ticket = Ticket(flight_id=new_flight.flight_id,
-                                price=100.0,  
-                                ticket_class="Business",  
-                                row=row_label,
-                                column=column,
-                                is_bought=0)
-            db.session.add(new_ticket)
-    
-    db.session.commit()
-
-
-def register_tickets_eco(plane_id, new_flight):
-  
-    plane = get_plane_by_id(plane_id)
     rows_eco = plane.seat_rows_eco
     columns_eco = plane.seat_columns_eco
 
+    # Register Business Class tickets
+    for row in range(1, rows_bis + 1):
+        for column in range(1, columns_bis + 1):
+            row_label = str(row)
+            new_ticket = Ticket(
+                flight_id=new_flight.flight_id,
+                price=100.0,
+                ticket_class="business",
+                row=row_label,
+                column=column,
+                is_bought=0
+            )
+            db.session.add(new_ticket)
+
+    # Register Economy Class tickets
     for row in range(1, rows_eco + 1):
         for column in range(1, columns_eco + 1):
-            row_label = chr(ord('A') + row - 1) 
-            new_ticket = Ticket(flight_id=new_flight.flight_id,
-                                price=50.0,  
-                                ticket_class="Economy",  
-                                row=row_label,
-                                column=column,
-                                is_bought=0)
+            row_label = str(row)
+            new_ticket = Ticket(
+                flight_id=new_flight.flight_id,
+                price=50.0,
+                ticket_class="economy",
+                row=row_label,
+                column=column,
+                is_bought=0
+            )
             db.session.add(new_ticket)
 
     db.session.commit()
@@ -56,19 +54,28 @@ def get_tickets_id(flightid):
             Ticket.flight_id == flightid,
         ).all()
     
-    json_tickets = [
-        {
-            "ticket_id":ticket.ticket_id,
-            "flight_id":ticket.flight_id,
+    json_tickets = []
+    for ticket in tickets:
+        column_value = ticket.column
+        if column_value == 2:
+            column_value = 3
+        elif column_value == 3:
+            column_value = 4
+        
+        json_ticket = {
+            "ticket_id": ticket.ticket_id,
+            "flight_id": ticket.flight_id,
             "ticket_class": ticket.ticket_class,
             "is_bought": ticket.is_bought,
             "row": ticket.row,
-            "column": ticket.column,
+            "column": column_value,
             "price": ticket.price
         }
-        for ticket in tickets
-    ]
+        json_tickets.append(json_ticket)
+        
+    
     return json_tickets
+
 
 def buy_tickets_service(current_user, ticket_ids,paymentMethod):
     if not ticket_ids:

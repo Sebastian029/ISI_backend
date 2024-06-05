@@ -49,10 +49,7 @@ def register_flight(current_user):
                             data_lotu=data.data_lotu)
 
         try:
-            
-            register_tickets_bis(data.plane_id, new_flight)
-
-            register_tickets_eco(data.plane_id, new_flight)
+            register_tickets(data.plane_id, new_flight)
 
             return jsonify({"message": "Nowy lot został zarejestrowany! Dodano bilety."}), 201
         except Exception as e:
