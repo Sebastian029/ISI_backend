@@ -22,14 +22,13 @@ def get_google_provider_cfg():
 
 @app.route("/login/google", methods=['GET', 'POST'])
 def login_google():
-    # Find out what URL to hit for Google login
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=request.base_url + "/callback",
-        scope=["openid", "email", "profile", "https://www.googleapis.com/auth/user.phonenumbers.read"],
+        scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
 

@@ -12,9 +12,10 @@ def register_tickets(plane_id, new_flight):
     rows_eco = plane.seat_rows_eco
     columns_eco = plane.seat_columns_eco
 
+    licznik = 0
     # Register Business Class tickets
-    for row in range(1, rows_bis + 1):
-        for column in range(1, columns_bis + 1):
+    for row in range(licznik, rows_bis ):
+        for column in range(0, columns_bis ):
             row_label = str(row)
             new_ticket = Ticket(
                 flight_id=new_flight.flight_id,
@@ -26,9 +27,12 @@ def register_tickets(plane_id, new_flight):
             )
             db.session.add(new_ticket)
 
+    # Update licznik to continue from where business class left off
+    licznik = rows_bis + 1
+
     # Register Economy Class tickets
-    for row in range(1, rows_eco + 1):
-        for column in range(1, columns_eco + 1):
+    for row in range(licznik, licznik + rows_eco):
+        for column in range(0, columns_eco ):
             row_label = str(row)
             new_ticket = Ticket(
                 flight_id=new_flight.flight_id,
@@ -72,9 +76,18 @@ def get_tickets_id(flightid):
             "price": ticket.price
         }
         json_tickets.append(json_ticket)
-        
+
+    num_columns = max(ticket.column for ticket in tickets) if tickets else 0
+    total_seats = len(tickets)
     
-    return json_tickets
+    result = {
+        "tickets": json_tickets,
+        "num_columns": num_columns,
+        "total_seats": total_seats
+    }
+    
+    return result
+
 
 
 def buy_tickets_service(current_user, ticket_ids,paymentMethod):

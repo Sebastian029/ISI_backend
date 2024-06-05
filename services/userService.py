@@ -103,19 +103,26 @@ def logout():
 
 @app.route('/refresh', methods=['POST'])
 def refresh():
-    refresh_token = None
-    if 'x-refresh-tokens' in request.headers:
-        refresh_token = request.headers['x-refresh-tokens']
-
-    data = jwt.decode(refresh_token, app.config['SECRET_KEY'], algorithms=["HS256"])
+    refresh_token = request.headers.get('x-refresh-tokens')
+    
+    if not refresh_token:
+        return jsonify({'message': 'Refresh token is missing'}), 400
+    
+    try:
+        data = jwt.decode(refresh_token, app.config['SECRET_KEY'], algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Refresh token has expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid refresh token'}), 401
+    
     current_user = User.query.filter_by(public_id=data['public_id']).first()
     if current_user is None:
-        return jsonify({'message': 'Invalid or expired refresh token'}), 401
-
+        return jsonify({'message': 'Invalid refresh token'}), 401
+    
     stored_token = RefreshToken.query.filter_by(token=refresh_token, revoked=False).first()
     if not stored_token:
         return jsonify({'message': 'Invalid or expired refresh token'}), 401
-
+    
     access_token = generate_access_token(current_user.public_id)
 
     return jsonify({'access_token': access_token})
