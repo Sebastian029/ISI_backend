@@ -51,7 +51,6 @@ class User(db.Model):
 
     def to_json_privileges(self):
         return {
-            "public_id": self.public_id,
             "name": self.name,
             "surname": self.surname,
             "phone_number": self.phone_number,

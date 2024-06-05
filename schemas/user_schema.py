@@ -14,8 +14,8 @@ class UserLoginModel(BaseModel):
     password: str
 
 class UserSearchModel(BaseModel):
-    firstName: str
-    lastName: str
+    name: str
+    surname: str
     email: EmailStr
 
 class UserModel(BaseModel):

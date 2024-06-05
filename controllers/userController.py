@@ -16,6 +16,10 @@ def get_user(id):
 def get_all_users():
     return User.query.all()
 
+def get_user_by_search(name, surname ,email):
+    user = User.query.filter_by(name=name, surname=surname, email=email).first()
+    return user.to_json_privileges()
+
 
 def get_all_users_json():
     users = User.query.all()
