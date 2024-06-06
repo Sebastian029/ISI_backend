@@ -2,6 +2,9 @@ from flask import jsonify, request
 from config import app
 from utils import token_required, role_required
 from controllers.followController import *
+from controllers.airlineController import get_airline_by_id
+from controllers.airportController import get_aiport_by_id
+from controllers.planeController import get_plane_by_id
 from pydantic import ValidationError
 from datetime import datetime
 from controllers.flightController import get_flight_by_id
@@ -49,9 +52,29 @@ def get_follows(current_user):
 
     for follow in follows:
         flight = get_flight_by_id(follow.flight_id)
+        if flight:
+            departure_airport = get_aiport_by_id(flight.departure_airport_id)
+            arrive_airport = get_aiport_by_id(flight.arrive_airport_id)
+            plane = get_plane_by_id(flight.plane_id)
+            airline = get_airline_by_id(flight.airline_id)
+
+            flight_info = {
+                "flight_id": flight.flight_id,
+                "departure_airport_name": departure_airport.airport_name if departure_airport else None,
+                "arrive_airport_name": arrive_airport.airport_name if arrive_airport else None,
+                "travel_time": str(flight.travel_time),
+                "distance": flight.distance,
+                "available_seats": flight.available_seats,
+                "plane_name": plane.plane_name if plane else None,
+                "airline_name": airline.airline_name if airline else None,
+                "data_lotu": flight.data_lotu
+            }
+        else:
+            flight_info = None
+
         follow_flight_data.append({
             "follow_id": follow.follow_id,
-            "flight": flight.to_json() if flight else None
+            "flight": flight_info
         })
 
     return jsonify(follow_flight_data), 200
