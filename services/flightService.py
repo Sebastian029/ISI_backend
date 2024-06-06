@@ -66,7 +66,7 @@ def register_flight(current_user):
 @token_required
 def suggest_flights(current_user):
     # Get the last 10 orders of the user
-    orders = order_by_user(current_user.public_id)
+    orders = order_by_user(current_user.user_id)
 
     # Get all the tickets from these orders
     # Get all the tickets from these orders
