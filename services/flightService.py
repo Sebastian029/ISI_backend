@@ -7,9 +7,11 @@ from controllers.airportController import *
 from controllers.planeController import *
 from controllers.airlineController import *
 from controllers.ticketController import *
+from controllers.orderController import *
 from schemas.flight_schema import *
 from pydantic import ValidationError
 from datetime import datetime
+
 
 @app.route("/flight_register", methods=["POST"])
 @token_required
@@ -60,6 +62,41 @@ def register_flight(current_user):
         return jsonify({"message": str(e)}), 400
 
     
+@app.route('/suggest_flights', methods=['GET'])
+@token_required
+def suggest_flights(current_user):
+    # Get the last 10 orders of the user
+    orders = order_by_user(current_user.public_id)
+
+    # Get all the tickets from these orders
+    # Get all the tickets from these orders
+    tickets = [ticket for order in orders for ticket in order.tickets]
+
+    # Get all the flights from these tickets
+    purchased_flights = [Flight.query.get(ticket.flight_id) for ticket in tickets]
+
+    departure_airports = [flight.departure_airport_id for flight in purchased_flights]
+    arrival_airports = [flight.arrive_airport_id for flight in purchased_flights]
+
+    most_common_departure = max(set(departure_airports), key=departure_airports.count)
+    most_common_arrival = max(set(arrival_airports), key=arrival_airports.count)
+
+    # Get all flights from the most common departure airport to the most common arrival airport
+    potential_flights = Flight.query.filter_by(departure_airport_id=most_common_departure, arrive_airport_id=most_common_arrival).all()
+
+    # Exclude the flights that the user has already purchased
+    suggested_flights = [flight for flight in potential_flights if flight not in purchased_flights]
+
+    # Limit the suggestions to 3 flights
+    suggested_flights = suggested_flights[:3]
+
+    if suggested_flights:
+        return jsonify([flight.to_json() for flight in suggested_flights]), 200
+    else:
+        return jsonify({"message": "No suggested flights found"}), 404
+
+
+
 @app.route('/flights_with_airports', methods=['GET'])
 def get_flights_with_airports():
     try:

@@ -3,6 +3,10 @@ from models.airport import Airport
 from models.city import City
 from config import db
 
+def get_flight_by_id(flight_id):
+    return Flight.query.get(flight_id)
+
+
 def create_flight(departure_airport_id, arrive_airport_id,travel_time, distance, available_seats, plane_id, airline_id, data_lotu):
     new_flight = Flight(departure_airport_id=departure_airport_id,
                             arrive_airport_id=arrive_airport_id,

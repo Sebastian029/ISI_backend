@@ -37,4 +37,9 @@ def get_transfer_uncompleted_orders():
     orders_json = [order.to_json_with_user() for order in orders]
     return orders_json
 
+def order_by_user(user_id):
+    orders = Order.query.filter_by(user_id=user_id).order_by(Order.order_id.desc()).limit(10).all()
+    if not orders:
+        raise ValueError(f"Orders with user_id = {user_id} not found")
+    return orders
 

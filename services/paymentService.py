@@ -6,6 +6,8 @@ from services.orderService import *
 
 
 @app.route('/create-payment', methods=['POST'])
+@token_required
+@role_required('user')
 def create_payment():
     data = request.json
     full_price = data.get('full_price')

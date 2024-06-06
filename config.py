@@ -15,7 +15,7 @@ CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
 
 
 app.config['SECRET_KEY']='daaa9975582b77c920be486c44667846'
-app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=30)
+app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=5)
 app.config['REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 app.config['BLACKLIST'] = set()

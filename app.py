@@ -9,6 +9,7 @@ from services.flightService import *
 from services.paymentService import *
 from services.privilageService import *
 from services.googleService import *
+from services.followService import *
 
 @app.route("/")
 def init():

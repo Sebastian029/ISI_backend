@@ -6,6 +6,7 @@ from controllers.roleController import all_get_role
 from utils import *
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+from controllers.roleUserController import create_user
 
 GOOGLE_CLIENT_ID = '211513266277-n9ahn4rsqgnsdo6330roufqp3uev8lt3.apps.googleusercontent.com'
 GOOGLE_CLIENT_SECRET = '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'
@@ -36,6 +37,10 @@ def login_google():
 @app.route("/login/google/callback", methods=['GET', 'POST'])
 def callback():
     code = request.args.get("code")
+
+    if not code:
+        return redirect("http://localhost:5173/")
+
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
@@ -68,12 +73,12 @@ def callback():
     user = get_user_by_email(users_email)
     if not user:
         # Create new user
-        user = User(
-            name=users_name,
-            surname=users_lastname,
-            phone_number="",
+        user = create_user(
+            firstName=users_name,
+            lastName=users_lastname,
+            phone_number=None,
             email=users_email,
-            password="password"
+            password="*"
         )
         db.session.add(user)
         db.session.commit()
@@ -82,6 +87,4 @@ def callback():
     access_token = generate_access_token(user.public_id)
     refresh_token = generate_refresh_token(user.public_id)
 
-    # Redirect to React app with tokens
-    rola = "user"
-    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={rola}")
+    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={user.roles}")

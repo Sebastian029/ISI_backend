@@ -9,6 +9,9 @@ class UserRegistrationModel(BaseModel):
     phoneNumber: Annotated[str, StringConstraints(min_length=9, max_length=9)]
     password: str
 
+class UserUpdatePhoneModel(BaseModel):  
+    phoneNumber: Annotated[str, StringConstraints(min_length=9, max_length=9)]
+
 class UserLoginModel(BaseModel):
     email: EmailStr
     password: str

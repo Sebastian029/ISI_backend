@@ -55,23 +55,20 @@ def login():
 
 
 
-@app.route("/update_email/<int:user_id>", methods=["PATCH"])
-def update_contact(user_id):
-    contact = get_user(user_id)
+@app.route("/update_number_phone", methods=["PATCH"])
+@token_required
+def update_contact(current_user):
 
-    if not contact:
-            return jsonify({"message": "User not found"}), 404
-
-    data = request.json
-    contact.name = data.get("name",contact.name)
-    contact.surname = data.get("lastName",contact.surname)
-    contact.email = data.get("email",contact.email)
-    contact.phone_number = data.get("phoneNumber",contact.phone_number)
-    contact.password = data.get("password",contact.password)
-
-    db.session.commit()
-
-    return jsonify({"message": "User updated."}), 200
+    try:
+        data = UserUpdatePhoneModel(**request.json) 
+    except ValidationError as e:
+        return jsonify({"message": e.errors()}), 400
+    
+    user = get_user_by_email(current_user.email)
+    if user:
+        user.phone_number = data.phoneNumber
+        db.session.commit()
+        return jsonify({"message": "User updated successfully"}), 200
 
 
 
