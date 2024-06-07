@@ -57,7 +57,7 @@ def get_follows(current_user):
             arrive_airport = get_aiport_by_id(flight.arrive_airport_id)
             plane = get_plane_by_id(flight.plane_id)
             airline = get_airline_by_id(flight.airline_id)
-
+            is_follow = get_follow(current_user.user_id, flight.flight_id)
             flight_info = {
                 "flight_id": flight.flight_id,
                 "departure_airport_name": departure_airport.airport_name if departure_airport else None,
@@ -67,7 +67,8 @@ def get_follows(current_user):
                 "available_seats": flight.available_seats,
                 "plane_name": plane.plane_name if plane else None,
                 "airline_name": airline.airline_name if airline else None,
-                "data_lotu": flight.data_lotu
+                "data_lotu": flight.data_lotu,
+                "follow_id":is_follow.follow_id if is_follow else None
             }
         else:
             flight_info = None

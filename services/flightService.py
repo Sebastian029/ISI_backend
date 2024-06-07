@@ -219,7 +219,8 @@ def get_flights_with_airports_token(current_user):
             "available_seats": flight.available_seats,
             "travel_time": flight.travel_time.strftime('%H:%M:%S'),
             "data_lotu": flight.data_lotu,
-            "is_follow": bool(is_follow)
+            "is_follow": bool(is_follow),
+            "follow_id":is_follow.follow_id if is_follow else None
         })
 
     return jsonify(flights_json), 200
