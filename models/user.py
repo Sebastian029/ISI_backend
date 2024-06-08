@@ -73,5 +73,6 @@ class User(db.Model):
             "name": self.name,
             "surname": self.surname,
             "phone_number": self.phone_number,
-            "email": self.email
+            "email": self.email,
+            "notification": self.notification
         }

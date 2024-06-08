@@ -36,15 +36,18 @@ def update_available_seats(flight_id, remaining_tickets):
             followers = Follow.query.filter_by(flight_id=flight_id).all()
             
             for follower in followers:
-                send_notification_email(follower.user_id, flight_id)
+                user = get_user_by_id(follower.user_id)
+                if user and user.notification:
+                    send_notification_email(follower.user_id, flight_id)
 
         if flight.available_seats == 0:
             followers = Follow.query.filter_by(flight_id=flight_id).all()
             
             for follower in followers:
-                send_cancel_email(follower.user_id, flight_id)
+                user = get_user_by_id(follower.user_id)
+                if user and user.notification:
+                    send_cancel_email(follower.user_id, flight_id)
                 
-
         db.session.commit()
         return {"message": f"Available seats for flight {flight_id} updated successfully"}, 200
     else:

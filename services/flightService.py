@@ -84,7 +84,8 @@ def suggest_flights(current_user):
 
     # Get all flights from the most common departure airport to the most common arrival airport
     potential_flights = Flight.query.filter_by(departure_airport_id=most_common_departure, arrive_airport_id=most_common_arrival).all()
-
+    print(potential_flights)
+    
     # Exclude the flights that the user has already purchased
     suggested_flights = [flight for flight in potential_flights if flight not in purchased_flights]
 
