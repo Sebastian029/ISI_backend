@@ -63,20 +63,26 @@ def update_notification(current_user):
         return jsonify({"message": "Notification updated successfully"}), 200
 
 
-@app.route("/update_number_phone", methods=["PATCH"])
+@app.route("/update_user", methods=["PATCH"])
 @token_required
-def update_contact(current_user):
-
+def update_user(current_user):
     try:
-        data = UserUpdatePhoneModel(**request.json) 
+        data = UserUpdateModel(**request.json)
     except ValidationError as e:
         return jsonify({"message": e.errors()}), 400
-    
+
     user = get_user_by_email(current_user.email)
     if user:
-        user.phone_number = data.phoneNumber
+        if data.phoneNumber:
+            user.phone_number = data.phoneNumber
+        if data.name:
+            user.name = data.name
+        if data.surname:
+            user.surname = data.surname
         db.session.commit()
         return jsonify({"message": "User updated successfully"}), 200
+    else:
+        return jsonify({"message": "User not found"}), 404
 
 
 

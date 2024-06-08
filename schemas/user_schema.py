@@ -1,6 +1,6 @@
-from pydantic import BaseModel, EmailStr, StringConstraints
+from pydantic import BaseModel, EmailStr, StringConstraints,Field
 from typing_extensions import Annotated
-
+from typing import Optional
 
 class UserRegistrationModel(BaseModel):
     firstName: str
@@ -9,8 +9,10 @@ class UserRegistrationModel(BaseModel):
     phoneNumber: Annotated[str, StringConstraints(min_length=9, max_length=9)]
     password: str
 
-class UserUpdatePhoneModel(BaseModel):  
-    phoneNumber: Annotated[str, StringConstraints(min_length=9, max_length=9)]
+class UserUpdateModel(BaseModel):  
+    phoneNumber: Optional[str] = Field(None, min_length=9, max_length=9)
+    name: Optional[str] = None
+    surname: Optional[str] = None
 
 class UserLoginModel(BaseModel):
     email: EmailStr
