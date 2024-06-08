@@ -45,3 +45,4 @@ def delete_follow(follow_id):
 
 def get_follows_by_user_id(user_id):
     return Follow.query.filter_by(user_id=user_id).all()
+

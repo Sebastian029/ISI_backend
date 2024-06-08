@@ -7,11 +7,23 @@ from authlib.integrations.flask_client import OAuth
 from datetime import timedelta
 from flask_wtf.csrf import CSRFProtect
 import os 
+from flask_mailman import Mail
+
+
 
 
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
+
+mail = Mail(app)
+app.config['MAIL_SERVER']='smtp.fastmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'dominikjaroszek@fastmail.com'
+app.config['MAIL_PASSWORD'] = '8a869t468s522z3x'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app) 
 
 
 app.config['SECRET_KEY']='daaa9975582b77c920be486c44667846'

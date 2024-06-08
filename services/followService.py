@@ -79,3 +79,4 @@ def get_follows(current_user):
         })
 
     return jsonify(follow_flight_data), 200
+

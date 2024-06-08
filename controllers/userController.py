@@ -10,7 +10,7 @@ def get_user_by_email(email):
 def get_user_by_number(phone_number):
     return User.query.filter_by(phone_number=phone_number).first()
 
-def get_user(id):
+def get_user_by_id(id):
     return User.query.get(id)
 
 def get_all_users():
@@ -47,7 +47,7 @@ def get_data_users_json():
     return users
 
 def update_user(id, public_id, name, surname, phone_number, email):
-    user = get_user(id)
+    user = get_user_by_id(id)
     if user:
         user.public_id = public_id
         user.name = name
@@ -59,7 +59,7 @@ def update_user(id, public_id, name, surname, phone_number, email):
     return None
 
 def delete_user(user_id):
-    user = get_user(user_id)
+    user = get_user_by_id(user_id)
 
     if not user:
         return False

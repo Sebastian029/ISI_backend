@@ -14,17 +14,19 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), unique=True, nullable=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password= db.Column(db.String(255), nullable=False)
+    notification = db.Column(db.Boolean, default=False)
    
     privileges = db.relationship('Privilege', secondary='privilege_users', backref='roled')
     roles = db.relationship('Role', secondary='role_users', backref='roled')
 
-    def __init__(self, name, surname, phone_number, email, password):
+    def __init__(self, name, surname, phone_number, email, password, notification):
         self.public_id = str(uuid.uuid4())
         self.name = name
         self.surname = surname
         self.phone_number = phone_number
         self.email = email
         self.set_password(password)
+        self.notification = notification
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -63,5 +65,13 @@ class User(db.Model):
         return {
             "name": self.name,
             "surname": self.surname,
+            "email": self.email
+        }
+    
+    def to_json_user(self):
+        return {
+            "name": self.name,
+            "surname": self.surname,
+            "phone_number": self.phone_number,
             "email": self.email
         }

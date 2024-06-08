@@ -1,7 +1,11 @@
 from models.flight import Flight
 from models.airport import Airport
 from models.city import City
-from config import db
+from models.follow import Follow
+from controllers.userController import get_user_by_id
+from config import db, mail
+from flask_mailman import EmailMessage
+from controllers.followController import delete_follow
 
 def get_flight_by_id(flight_id):
     return Flight.query.get(flight_id)
@@ -20,6 +24,61 @@ def create_flight(departure_airport_id, arrive_airport_id,travel_time, distance,
     db.session.add(new_flight)
     db.session.commit()
     return new_flight
+
+
+def update_available_seats(flight_id, remaining_tickets):
+    flight = get_flight_by_id(flight_id)
+    
+    if flight:
+        # Zaktualizuj dostępne miejsca na locie
+        flight.available_seats -= remaining_tickets
+
+        if flight.available_seats == 2 or flight.available_seats == 1:
+            followers = Follow.query.filter_by(flight_id=flight_id).all()
+            
+            for follower in followers:
+                send_notification_email(follower.user_id, flight_id)
+
+        if flight.available_seats == 0:
+            followers = Follow.query.filter_by(flight_id=flight_id).all()
+            
+            for follower in followers:
+                send_cancel_email(follower.user_id, flight_id)
+                
+
+        db.session.commit()
+        return {"message": f"Available seats for flight {flight_id} updated successfully"}, 200
+    else:
+        return {"message": f"Flight with id {flight_id} not found"}, 404
+
+
+def send_notification_email(user_id, flight_id):
+    user = get_user_by_id(user_id)
+    flight = get_flight_by_id(flight_id)
+    email = user.email
+    if user and flight:
+        msg = EmailMessage(
+        'Hello',
+        'Hello, you are following flight with id: ' + str(flight_id) + '. The number of available seats is now: ' + str(flight.available_seats),
+        'dominikjaroszek@fastmail.com',
+        [str(email)],
+        )
+        msg.send()
+        return "Email sent"
+
+def send_cancel_email(user_id, flight_id):
+    user = get_user(user_id)
+    flight = get_flight_by_id(flight_id)
+    email = user.email
+    if user and flight:
+        msg = EmailMessage(
+        'Hello',
+        'Hello, cancel with id: ',
+        'dominikjaroszek@fastmail.com',
+        [str(email)],
+        )
+        msg.send()
+        return "Email sent"
 
 def get_airports(airport_id):
     

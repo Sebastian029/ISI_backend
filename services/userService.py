@@ -27,7 +27,8 @@ def register_user():
             lastName=data.lastName,
             email=data.email,
             phone_number=data.phoneNumber,
-            password=data.password
+            password=data.password,
+            notification=False
         )
     except Exception as e:
         return jsonify({"message": str(e)}), 400
@@ -52,7 +53,14 @@ def login():
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
 
-
+@app.route("/notification", methods=["PATCH"])
+@token_required
+def update_notification(current_user):
+    user = get_user_by_id(current_user.user_id)
+    if user:
+        user.notification = not user.notification
+        db.session.commit()
+        return jsonify({"message": "Notification updated successfully"}), 200
 
 
 @app.route("/update_number_phone", methods=["PATCH"])
@@ -97,6 +105,13 @@ def logout():
     if revoke_token(refresh_token,token):
         return jsonify({"message": "Refresh token revoked"})
     return jsonify({"message": "Invalid refresh token"}), 400
+
+@app.route('/contact', methods=['GET'])
+@token_required
+def get_contact(current_user):
+    user = get_user_by_id(current_user.user_id)
+    return jsonify(user.to_json_user())
+
 
 @app.route('/refresh', methods=['POST'])
 def refresh():

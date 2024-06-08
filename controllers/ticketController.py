@@ -1,5 +1,6 @@
 from models.ticket import Ticket
 from controllers.planeController import *
+from controllers.flightController import update_available_seats
 from models.order import Order
 from config import db
 from datetime import datetime
@@ -90,12 +91,12 @@ def get_tickets_id(flightid):
 
 
 
-def buy_tickets_service(current_user, ticket_ids,paymentMethod):
+def buy_tickets_service(current_user, ticket_ids, paymentMethod):
     if not ticket_ids:
         return {"message": "No tickets provided in the request body"}, 400
 
     try:
-        new_order = Order(user_id = current_user.user_id, full_price = 0, is_payment_completed = 0, paymentMethod = paymentMethod, orderDate = datetime.now() )
+        new_order = Order(user_id=current_user.user_id, full_price=0, is_payment_completed=0, paymentMethod=paymentMethod, orderDate=datetime.now())
         db.session.add(new_order)
 
         total_price = 0
@@ -104,7 +105,7 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
             ticket = get_ticket(ticket_id)
 
             if ticket:
-                ticket_price = ticket.price  
+                ticket_price = ticket.price
                 ticket.is_bought = True
                 ticket.order_id = new_order.order_id
                 total_price += ticket_price
@@ -113,6 +114,12 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
 
         new_order.full_price = total_price
+        
+        # Oblicz liczbę jeszcze niesprzedanych biletów
+        remaining_tickets = len(ticket_ids)
+
+        # Wywołaj funkcję aktualizującą dostępne miejsca na locie
+        update_available_seats(ticket.flight_id, remaining_tickets)
 
         db.session.commit()
         return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id, "full_price": new_order.full_price}, 200
@@ -120,6 +127,9 @@ def buy_tickets_service(current_user, ticket_ids,paymentMethod):
         db.session.rollback()
         return {"message": f"An error occurred: {str(e)}"}, 500
     
+
+
+
 def delete_ticket_service(ticket_id):
     try:
         ticket = get_ticket(ticket_id)
