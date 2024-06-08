@@ -5,7 +5,6 @@ from models.follow import Follow
 from controllers.userController import get_user_by_id
 from config import db, mail
 from flask_mailman import EmailMessage
-from controllers.followController import delete_follow
 
 def get_flight_by_id(flight_id):
     return Flight.query.get(flight_id)
@@ -67,7 +66,7 @@ def send_notification_email(user_id, flight_id):
         return "Email sent"
 
 def send_cancel_email(user_id, flight_id):
-    user = get_user(user_id)
+    user = get_user_by_id(user_id)
     flight = get_flight_by_id(flight_id)
     email = user.email
     if user and flight:
