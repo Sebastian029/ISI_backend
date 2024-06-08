@@ -29,8 +29,8 @@ def follow(current_user):
         return jsonify({"message": "Już obserwujesz tego użytkownika"}), 400
 
     try:
-        create_follow(user_id=current_user.user_id, flight_id=flight_id)
-        return jsonify({"message": "Użytkownik obserwuje lot!"}), 201
+        follow = create_follow(user_id=current_user.user_id, flight_id=flight_id)
+        return jsonify({"message": "Użytkownik obserwuje lot!", "follow_id": follow.follow_id}), 201
     except Exception as e:
         return jsonify({"message": "Wystąpił błąd przy dodawaniu obserwacji do bazy danych: " + str(e)}), 400
     

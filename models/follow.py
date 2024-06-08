@@ -6,7 +6,8 @@ class Follow(db.Model):
     flight_id = db.Column(db.Integer, db.ForeignKey('flight.flight_id'), nullable=False)
 
     
-    def __init__(self, user_id, flight_id):
+    def __init__(self, follow_id, user_id, flight_id):
+        self.follow_id = follow_id
         self.user_id = user_id
         self.flight_id = flight_id
 
