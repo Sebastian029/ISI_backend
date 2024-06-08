@@ -56,11 +56,13 @@ def login():
 @app.route("/notification", methods=["PATCH"])
 @token_required
 def update_notification(current_user):
-    user = get_user_by_id(current_user.user_id)
+    user = get_user_by_id(current_user.id)
     if user:
         user.notification = not user.notification
         db.session.commit()
-        return jsonify({"message": "Notification updated successfully"}), 200
+        message = "Notifications enabled" if user.notification else "Notifications disabled"
+        return jsonify({"message": message}), 200
+    return jsonify({"message": "User not found"}), 404
 
 
 @app.route("/update_user", methods=["PATCH"])
