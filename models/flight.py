@@ -1,4 +1,5 @@
 from config import db
+from models.airport import Airport
 
 class Flight(db.Model):
     flight_id = db.Column(db.Integer, primary_key=True)
@@ -11,7 +12,8 @@ class Flight(db.Model):
     airline_id = db.Column(db.Integer, db.ForeignKey('airlines.airline_id'), nullable=False)
     data_lotu = db.Column(db.DateTime, nullable=False)
 
-
+    departure_airport = db.relationship("Airport", foreign_keys=[departure_airport_id])
+    arrive_airport = db.relationship("Airport", foreign_keys=[arrive_airport_id])
 
     def __init__(self, departure_airport_id, arrive_airport_id, travel_time, distance, available_seats, plane_id, airline_id, data_lotu):
         self.departure_airport_id = departure_airport_id

@@ -5,9 +5,22 @@ from config import db
 def get_all_airports_json():
     airports = Airport.query.all()
     if not airports:
-        return []
+        raise ValueError(f"Airports not found")
     airports = [airport.to_json() for airport in airports]
     return airports
+
+def get_airports_by_id(airport_id):
+    airports = db.session.query(
+            Airport, City.city_id, City.city_name
+        ).join(
+            City, Airport.city_id == City.city_id
+        ).filter(
+            Airport.airport_id == airport_id,
+        ).first()
+    if airports is None:
+        raise ValueError(f"Airports not found")
+    return airports
+        
 
 def get_cities():
     result = db.session.query(
@@ -15,6 +28,8 @@ def get_cities():
         ).join(
             City, Airport.city_id == City.city_id
         ).all()
+    if result is None:
+        raise ValueError(f"Cities not found")
     return result
 
 def get_aiport_by_id(id):

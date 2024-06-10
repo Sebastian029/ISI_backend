@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 
 
 class OrderRegistrationModel(BaseModel):
-    full_price: str
+    full_price: float
     is_payment_completed: bool
 
 

@@ -19,14 +19,14 @@ class User(db.Model):
     privileges = db.relationship('Privilege', secondary='privilege_users', backref='roled')
     roles = db.relationship('Role', secondary='role_users', backref='roled')
 
-    def __init__(self, name, surname, phone_number, email, password, notification):
+    def __init__(self, name, surname, phone_number, email, password):
         self.public_id = str(uuid.uuid4())
         self.name = name
         self.surname = surname
         self.phone_number = phone_number
         self.email = email
         self.set_password(password)
-        self.notification = notification
+        self.notification = False
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

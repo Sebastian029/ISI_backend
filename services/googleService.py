@@ -1,8 +1,6 @@
-from flask import request, jsonify ,redirect,json
-from config import app, db
+from flask import request,redirect,json
+from config import app
 from controllers.userController import *
-from controllers.roleUserController import *
-from controllers.roleController import all_get_role
 from utils import *
 from oauthlib.oauth2 import WebApplicationClient
 import requests
@@ -72,19 +70,15 @@ def callback():
 
     user = get_user_by_email(users_email)
     if not user:
-        # Create new user
         user = create_user(
             firstName=users_name,
             lastName=users_lastname,
             phone_number=None,
             email=users_email,
-            password="*"
+            password="*",
         )
-        db.session.add(user)
-        db.session.commit()
 
-    # Generate tokens
     access_token = generate_access_token(user.public_id)
     refresh_token = generate_refresh_token(user.public_id)
-
-    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={user.roles}")
+    rola = "user"
+    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={rola}")

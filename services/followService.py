@@ -6,9 +6,7 @@ from controllers.airlineController import get_airline_by_id
 from controllers.airportController import get_aiport_by_id
 from controllers.planeController import get_plane_by_id
 from pydantic import ValidationError
-from datetime import datetime
 from controllers.flightController import get_flight_by_id
-from config import db
 
 @app.route("/follow", methods=["POST"])
 @token_required

@@ -1,4 +1,4 @@
-from config import app, db
+from config import app
 from controllers.ticketController import  *
 from controllers.orderController import *
 from flask import request, jsonify

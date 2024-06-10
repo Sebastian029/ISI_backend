@@ -14,7 +14,6 @@ def register_tickets(plane_id, new_flight):
     columns_eco = plane.seat_columns_eco
 
     licznik = 0
-    # Register Business Class tickets
     for row in range(licznik, rows_bis ):
         for column in range(0, columns_bis ):
             row_label = str(row)
@@ -28,10 +27,8 @@ def register_tickets(plane_id, new_flight):
             )
             db.session.add(new_ticket)
 
-    # Update licznik to continue from where business class left off
     licznik = rows_bis + 1
 
-    # Register Economy Class tickets
     for row in range(licznik, licznik + rows_eco):
         for column in range(0, columns_eco ):
             row_label = str(row)
@@ -49,8 +46,11 @@ def register_tickets(plane_id, new_flight):
   
 
 
-def get_ticket(ticket_id):
-    return Ticket.query.get(ticket_id)
+def get_ticket_by_id(ticket_id):
+    ticket = Ticket.query.get(ticket_id)
+    if ticket is None:
+        raise ValueError(f"Ticket with id {ticket_id} not found")
+    return ticket
 
 def get_tickets_id(flightid):
     tickets = db.session.query(
@@ -96,13 +96,25 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
         return {"message": "No tickets provided in the request body"}, 400
 
     try:
+        # Check if any of the tickets are already bought
+        already_bought_tickets = []
+        for ticket_id in ticket_ids:
+            ticket = get_ticket_by_id(ticket_id)
+            if not ticket:
+                return {"message": f"Ticket with id {ticket_id} not found"}, 404
+            if ticket.is_bought:
+                already_bought_tickets.append(ticket_id)
+        
+        if already_bought_tickets:
+            return {"message": f"Tickets with ids {already_bought_tickets} are already bought"}, 400
+        
         new_order = Order(user_id=current_user.user_id, full_price=0, is_payment_completed=0, paymentMethod=paymentMethod, orderDate=datetime.now())
         db.session.add(new_order)
 
         total_price = 0
 
         for ticket_id in ticket_ids:
-            ticket = get_ticket(ticket_id)
+            ticket = get_ticket_by_id(ticket_id)
 
             if ticket:
                 ticket_price = ticket.price
@@ -115,10 +127,8 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
 
         new_order.full_price = total_price
         
-        # Oblicz liczbę jeszcze niesprzedanych biletów
         remaining_tickets = len(ticket_ids)
 
-        # Wywołaj funkcję aktualizującą dostępne miejsca na locie
         update_available_seats(ticket.flight_id, remaining_tickets)
 
         db.session.commit()
@@ -132,7 +142,7 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
 
 def delete_ticket_service(ticket_id):
     try:
-        ticket = get_ticket(ticket_id)
+        ticket = get_ticket_by_id(ticket_id)
         if ticket:
             if ticket.is_bought == 0:  
                 db.session.delete(ticket)
@@ -151,7 +161,7 @@ def update_ticket_price_service(ticket_id, new_price):
         if not new_price:
             return {"message": "Nie podano nowej ceny biletu."}, 400
 
-        ticket = get_ticket(ticket_id)
+        ticket = get_ticket_by_id(ticket_id)
         if ticket:
             ticket.price = new_price
             db.session.commit()

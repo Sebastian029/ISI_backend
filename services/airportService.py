@@ -1,4 +1,4 @@
-from config import app, db
+from config import app
 from controllers.airportController import *
 from flask import  jsonify
 from utils import token_required

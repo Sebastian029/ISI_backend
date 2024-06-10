@@ -2,12 +2,15 @@ from models.plane import Plane
 from config import db
 
 def get_plane_by_id(id):
-    return Plane.query.get(id)
+    plane = Plane.query.get(id)
+    if not plane:
+        raise ValueError(f"Plane with id {id} not found")
+    return plane
 
 def get_all_planes_json():
     planes = Plane.query.all()
     if not planes:
-        return []
+        raise ValueError(f"Planes not found")
     planes = [plane.to_json() for plane in planes]
     return planes
 

@@ -1,5 +1,5 @@
 from flask import request, jsonify 
-from config import app, db
+from config import app
 from controllers.userController import *
 from controllers.roleUserController import *
 from controllers.roleController import all_get_role
@@ -56,10 +56,10 @@ def login():
 @app.route("/notification", methods=["PATCH"])
 @token_required
 def update_notification(current_user):
-    user = get_user_by_id(current_user.id)
+    user = get_user_by_id(current_user.user_id)
     if user:
-        user.notification = not user.notification
-        db.session.commit()
+        user = change_notification(user)
+
         message = "Notifications enabled" if user.notification else "Notifications disabled"
         return jsonify({"message": message}), 200
     return jsonify({"message": "User not found"}), 404
@@ -75,13 +75,7 @@ def update_user(current_user):
 
     user = get_user_by_email(current_user.email)
     if user:
-        if data.phoneNumber:
-            user.phone_number = data.phoneNumber
-        if data.name:
-            user.name = data.name
-        if data.surname:
-            user.surname = data.surname
-        db.session.commit()
+        change_data(data, user)
         return jsonify({"message": "User updated successfully"}), 200
     else:
         return jsonify({"message": "User not found"}), 404

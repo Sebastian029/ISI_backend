@@ -1,7 +1,6 @@
 from flask import jsonify, request, url_for, redirect
 from config import app,db
 import paypalrestsdk
-from datetime import datetime
 from services.orderService import *
 
 
@@ -79,5 +78,4 @@ def execute_payment():
 
 @app.route('/payment-cancelled', methods=['GET'])
 def payment_cancelled():
-    # return jsonify({"success": False, "message": "Payment cancelled"})
     return redirect('http://localhost:5173/cancell')

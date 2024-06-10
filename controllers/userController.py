@@ -68,3 +68,17 @@ def delete_user(user_id):
     db.session.commit()
 
     return True
+
+def change_notification(user):
+    user.notification = not user.notification
+    db.session.commit()
+    return user
+
+def change_data(data, user):
+    if data.phoneNumber:
+        user.phone_number = data.phoneNumber
+    if data.name:
+        user.name = data.name
+    if data.surname:
+        user.surname = data.surname
+    db.session.commit()
