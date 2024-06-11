@@ -11,9 +11,7 @@ from app.services.privilageService import *
 from app.services.googleService import *
 from app.services.followService import *
 
-@app.route("/")
-def init():
-    return "Hello WORLD"
+
 
 if __name__ == "__main__":
     with app.app_context():
