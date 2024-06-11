@@ -1,7 +1,9 @@
-from app.config import app
 from app.controllers.airlineController import *
+from flask import blueprints
 
-@app.route("/airlines", methods=["GET"])
+airlinebp = blueprints.Blueprint('airlinebp', __name__)
+
+@airlinebp.route("/airlines", methods=["GET"])
 def get_airlines():
     try:
         airlines = get_all_airlines_json()

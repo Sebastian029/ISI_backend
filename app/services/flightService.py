@@ -1,5 +1,4 @@
-from flask import jsonify, request
-from app.config import app
+from flask import jsonify, request, blueprints
 from app.utils import token_required, role_required
 from app.controllers.flightController import *
 from app.controllers.planeController import *
@@ -15,7 +14,9 @@ from datetime import datetime
 from sqlalchemy.orm import aliased
 import random
 
-@app.route("/flight_register", methods=["POST"])
+fligtbp = blueprints.Blueprint('fligtbp', __name__)
+
+@fligtbp.route("/flight_register", methods=["POST"])
 @token_required
 @role_required('admin')
 def register_flight(current_user):
@@ -64,7 +65,7 @@ def register_flight(current_user):
         return jsonify({"message": str(e)}), 400
 
     
-@app.route('/suggest_flights', methods=['GET'])
+@fligtbp.route('/suggest_flights', methods=['GET'])
 @token_required
 def suggest_flights(current_user):
     # Get the last 10 orders of the user
@@ -141,7 +142,7 @@ def suggest_flights(current_user):
         return jsonify({"message": "No suggested flights found"}), 404
 
 
-@app.route('/flights_with_airports', methods=['GET'])
+@fligtbp.route('/flights_with_airports', methods=['GET'])
 def get_flights_with_airports():
     try:
         departure_airport_id = request.args.get('departure_airport_id')
@@ -203,7 +204,7 @@ def get_flights_with_airports():
     return jsonify(flights_json), 200
 
 
-@app.route('/flights_with_airports_token', methods=['GET'])
+@fligtbp.route('/flights_with_airports_token', methods=['GET'])
 @token_required
 def get_flights_with_airports_token(current_user):
     try:

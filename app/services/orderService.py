@@ -1,11 +1,16 @@
 from flask import request, jsonify
-from app.config import app, db
+from app.config import db
 from app.controllers.orderController import *
 from app.utils import token_required, role_required
 from app.schemas.order_schema import *
 from pydantic import ValidationError
 
-@app.route('/order', methods=['POST'])
+from flask import blueprints
+
+orderbp = blueprints.Blueprint('orderbp', __name__)
+
+
+@orderbp.route('/order', methods=['POST'])
 @token_required
 @role_required('user')
 def register_order(current_user):
@@ -21,7 +26,7 @@ def register_order(current_user):
     return jsonify({'message' : 'New order created'})
 
 
-@app.route('/order/<int:order_id>', methods=['GET'])
+@orderbp.route('/order/<int:order_id>', methods=['GET'])
 def get_order_tickets_route(order_id):
     try:
         order = get_order_tickets(order_id)
@@ -33,7 +38,7 @@ def get_order_tickets_route(order_id):
         print(f"Unexpected error: {e}")  
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
-@app.route('/orders/user/', methods=['GET'])
+@orderbp.route('/orders/user/', methods=['GET'])
 @token_required
 def get_orders_tickets_route(current_user):
     try:
@@ -46,7 +51,7 @@ def get_orders_tickets_route(current_user):
         print(f"Unexpected error: {e}")  
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
-@app.route('/orders/transfer', methods=['GET'])
+@orderbp.route('/orders/transfer', methods=['GET'])
 def get_orders_transfer_route():
     try:
         orders = get_transfer_uncompleted_orders()
@@ -59,7 +64,7 @@ def get_orders_transfer_route():
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
 
-@app.route('/order/confirm/<int:order_id>', methods=['GET'])
+@orderbp.route('/order/confirm/<int:order_id>', methods=['GET'])
 def confirm_order_route(order_id):
     try:
         order = get_order_by_id(order_id)

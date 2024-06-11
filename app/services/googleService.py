@@ -1,10 +1,13 @@
 from flask import request,redirect,json
-from app.config import app
 from app.controllers.userController import *
 from app.utils import *
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 from app.controllers.roleUserController import create_user
+
+from flask import blueprints
+
+googlebp = blueprints.Blueprint('googlebp', __name__)
 
 GOOGLE_CLIENT_ID = '211513266277-n9ahn4rsqgnsdo6330roufqp3uev8lt3.apps.googleusercontent.com'
 GOOGLE_CLIENT_SECRET = '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'
@@ -19,7 +22,7 @@ def get_google_provider_cfg():
 
 
 
-@app.route("/login/google", methods=['GET', 'POST'])
+@googlebp.route("/login/google", methods=['GET', 'POST'])
 def login_google():
     google_provider_cfg = get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
@@ -32,7 +35,7 @@ def login_google():
     return redirect(request_uri)
 
 
-@app.route("/login/google/callback", methods=['GET', 'POST'])
+@googlebp.route("/login/google/callback", methods=['GET', 'POST'])
 def callback():
     code = request.args.get("code")
 

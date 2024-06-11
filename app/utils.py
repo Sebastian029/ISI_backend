@@ -1,7 +1,6 @@
 import jwt
 from functools import wraps
-from flask import request, jsonify
-from app.config import app
+from flask import request, jsonify, current_app
 from app.models.user import User
 from datetime import datetime, timedelta
 from app.models.refreshtoken import RefreshToken
@@ -17,11 +16,11 @@ def token_required(f):
         if not token:
            return jsonify({'message': 'a valid token is missing'}), 401
        
-        if token in app.config['BLACKLIST']:
+        if token in current_app.config['BLACKLIST']:
            return jsonify({'message': 'token is blacklisted'}), 401
 
         try:
-           data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+           data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
            current_user = User.query.filter_by(public_id=data['public_id']).first()
         except jwt.ExpiredSignatureError:
            return jsonify({'message': 'token has expired'}), 401
@@ -33,23 +32,23 @@ def token_required(f):
 
 def generate_access_token(public_id):
     payload = {
-        'exp': datetime.utcnow() + app.config['ACCESS_TOKEN_EXPIRES'],
+        'exp': datetime.utcnow() + current_app.config['ACCESS_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
         'public_id': public_id
     }
-    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+    return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
 def generate_refresh_token(public_id):
     payload = {
-        'exp': datetime.utcnow() + app.config['REFRESH_TOKEN_EXPIRES'],
+        'exp': datetime.utcnow() + current_app.config['REFRESH_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
         'public_id': public_id
     }
-    token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+    token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
     refresh_token = RefreshToken(
         token=token,
         public_id=public_id,
-        expires=datetime.utcnow() + app.config['REFRESH_TOKEN_EXPIRES'],
+        expires=datetime.utcnow() + current_app.config['REFRESH_TOKEN_EXPIRES'],
         revoked=0
     )
     db.session.add(refresh_token)
@@ -58,7 +57,7 @@ def generate_refresh_token(public_id):
 
 def revoke_token(token, secondToken):
     refresh_token = RefreshToken.query.filter_by(token=token).first()
-    app.config['BLACKLIST'].add(secondToken)
+    current_app.config['BLACKLIST'].add(secondToken)
     if refresh_token:
         refresh_token.revoked = True
         db.session.commit()

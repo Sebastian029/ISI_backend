@@ -1,10 +1,12 @@
-from app.config import app, db
+
 from app.controllers.privilegeController import *
 from app.controllers.userController import get_data_users_json
-from flask import  jsonify,request
+from flask import  jsonify,request,blueprints
 from app.utils import token_required, role_required
 
-@app.route("/privilages", methods=["GET"])
+privilagebp = blueprints.Blueprint('privilagebp', __name__)
+
+@privilagebp.route("/privilages", methods=["GET"])
 @token_required
 @role_required('admin')
 def get_privilages_route(current_user):
@@ -12,14 +14,14 @@ def get_privilages_route(current_user):
     return jsonify(priviliges)
 
 
-@app.route("/users/privilages", methods=["GET"])
+@privilagebp.route("/users/privilages", methods=["GET"])
 @token_required
 @role_required('admin')
 def get_users_privilages_route(current_user):
     users = get_data_users_json()
     return jsonify(users)
 
-@app.route("/users/privileges/add", methods=["POST"])
+@privilagebp.route("/users/privileges/add", methods=["POST"])
 @token_required
 @role_required('admin')
 def add_user_privilege_route(current_user):
@@ -33,7 +35,7 @@ def add_user_privilege_route(current_user):
     message, status_code = add_privilege(public_id, privilege_name)
     return jsonify({'message': message}), status_code
 
-@app.route("/users/privileges/remove", methods=["DELETE"])
+@privilagebp.route("/users/privileges/remove", methods=["DELETE"])
 @token_required
 @role_required('admin')
 def remove_user_privilege_route(current_user):
@@ -47,6 +49,6 @@ def remove_user_privilege_route(current_user):
     message, status_code = remove_privilege(public_id, privilege_name)
     return jsonify({'message': message}), status_code
 
-@app.route("/")
+@privilagebp.route("/")
 def initddd():
     return "Hello WORLD"

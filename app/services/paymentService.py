@@ -1,10 +1,14 @@
 from flask import jsonify, request, url_for, redirect
-from app.config import app,db
+from app.config import db
 import paypalrestsdk
 from app.services.orderService import *
 
+from flask import blueprints
 
-@app.route('/create-payment', methods=['POST'])
+paymentbp = blueprints.Blueprint('paymentbp', __name__)
+
+
+@paymentbp.route('/create-payment', methods=['POST'])
 @token_required
 @role_required('user')
 def create_payment():
@@ -54,7 +58,7 @@ def create_payment():
         return jsonify({"error": payment.error}), 400
     
 
-@app.route('/execute-payment', methods=['GET'])
+@paymentbp.route('/execute-payment', methods=['GET'])
 def execute_payment():
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
@@ -76,6 +80,6 @@ def execute_payment():
         return jsonify({"error": payment.error}), 400
 
 
-@app.route('/payment-cancelled', methods=['GET'])
+@paymentbp.route('/payment-cancelled', methods=['GET'])
 def payment_cancelled():
     return redirect('http://localhost:5173/cancell')

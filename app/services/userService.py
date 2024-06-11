@@ -1,5 +1,4 @@
-from flask import request, jsonify 
-from app.config import app
+from flask import request, jsonify,blueprints
 from app.controllers.userController import *
 from app.controllers.roleUserController import *
 from app.controllers.roleController import all_get_role
@@ -7,8 +6,9 @@ from app.utils import *
 from app.schemas.user_schema import *
 from pydantic import ValidationError
 
+userbp= blueprints.Blueprint('userbp', __name__)
 
-@app.route("/register", methods=["POST"])
+@userbp.route("/register", methods=["POST"])
 def register_user():
     try:
         data = UserRegistrationModel(**request.json)
@@ -35,7 +35,7 @@ def register_user():
 
     return jsonify({"message": "User created!"}), 201
 
-@app.route('/login', methods=['POST'])
+@userbp.route('/login', methods=['POST'])
 def login():
     try:
         data = UserLoginModel(**request.json)
@@ -53,7 +53,7 @@ def login():
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
 
 
-@app.route("/notification", methods=["PATCH"])
+@userbp.route("/notification", methods=["PATCH"])
 @token_required
 def update_notification(current_user):
     user = get_user_by_id(current_user.user_id)
@@ -65,7 +65,7 @@ def update_notification(current_user):
     return jsonify({"message": "User not found"}), 404
 
 
-@app.route("/update_user", methods=["PATCH"])
+@userbp.route("/update_user", methods=["PATCH"])
 @token_required
 def update_user(current_user):
     try:
@@ -82,20 +82,20 @@ def update_user(current_user):
 
 
 
-@app.route("/delete_contact/<int:user_id>", methods=["DELETE"])
+@userbp.route("/delete_contact/<int:user_id>", methods=["DELETE"])
 def delete_contact(user_id):
     if delete_user(user_id):
         return jsonify({"message": "User deleted!"}), 200
     else:
         return jsonify({"message": "User not found"}), 404
 
-@app.route("/users", methods=["GET"])
+@userbp.route("/users", methods=["GET"])
 @token_required
 def get_contacts(current_user):
     users = get_all_users_json()
     return jsonify(users)
 
-@app.route('/logout', methods=['DELETE'])
+@userbp.route('/logout', methods=['DELETE'])
 def logout():
     token = None
     if 'x-access-tokens' in request.headers:
@@ -108,14 +108,14 @@ def logout():
         return jsonify({"message": "Refresh token revoked"})
     return jsonify({"message": "Invalid refresh token"}), 400
 
-@app.route('/contact', methods=['GET'])
+@userbp.route('/contact', methods=['GET'])
 @token_required
 def get_contact(current_user):
     user = get_user_by_id(current_user.user_id)
     return jsonify(user.to_json_user())
 
 
-@app.route('/refresh', methods=['POST'])
+@userbp.route('/refresh', methods=['POST'])
 def refresh():
     refresh_token = request.headers.get('x-refresh-tokens')
     
@@ -168,13 +168,13 @@ def refresh():
 #         users = get_users(data.name, data.surname)
 #     return jsonify(users)
 
-@app.route("/users_search", methods=["GET"])
+@userbp.route("/users_search", methods=["GET"])
 def get_users_serach_route():
     
     users = get_users_search()
     return jsonify(users)
 
-@app.route("/user_privileges", methods=["POST"])
+@userbp.route("/user_privileges", methods=["POST"])
 def get_contacts_email():
     try:
          data = UserSearchModel(**request.json)

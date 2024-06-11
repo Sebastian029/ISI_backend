@@ -1,4 +1,3 @@
-from app.config import app
 from app.controllers.ticketController import  *
 from app.controllers.orderController import *
 from flask import request, jsonify
@@ -6,7 +5,11 @@ from app.utils import token_required,role_required
 from app.schemas.ticket_schema import TicketBuyModel
 from pydantic import ValidationError
 
-@app.route("/tickets/<int:flightid>", methods=["GET"])
+from flask import blueprints
+
+ticketbp = blueprints.Blueprint('ticketbp', __name__)
+
+@ticketbp.route("/tickets/<int:flightid>", methods=["GET"])
 def get_tickets(flightid):
     try:
         tickets = get_tickets_id(flightid)
@@ -15,7 +18,7 @@ def get_tickets(flightid):
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-@app.route("/ticket_buy", methods=["POST"])
+@ticketbp.route("/ticket_buy", methods=["POST"])
 @token_required
 @role_required('user')
 # @privilege_required('buying')
@@ -33,7 +36,7 @@ def buy_tickets(current_user):
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 
-@app.route("/delete_ticket/<int:ticket_id>", methods=["DELETE"])
+@ticketbp.route("/delete_ticket/<int:ticket_id>", methods=["DELETE"])
 @token_required
 @role_required('admin')
 def delete_ticket(current_user, ticket_id):
@@ -41,7 +44,7 @@ def delete_ticket(current_user, ticket_id):
     return jsonify(result), status_code
     
 
-@app.route("/update_ticket_price/<int:ticket_id>", methods=["PATCH"])
+@ticketbp.route("/update_ticket_price/<int:ticket_id>", methods=["PATCH"])
 @token_required
 @role_required('admin')
 def update_ticket_price(current_user, ticket_id):

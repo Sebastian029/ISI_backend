@@ -1,5 +1,4 @@
 from flask import jsonify, request
-from app.config import app
 from app.utils import token_required, role_required
 from app.controllers.followController import *
 from app.controllers.airlineController import get_airline_by_id
@@ -8,7 +7,11 @@ from app.controllers.planeController import get_plane_by_id
 from pydantic import ValidationError
 from app.controllers.flightController import get_flight_by_id
 
-@app.route("/follow", methods=["POST"])
+from flask import blueprints
+
+followbp = blueprints.Blueprint('followbp', __name__)
+
+@followbp.route("/follow", methods=["POST"])
 @token_required
 def follow(current_user):
     try:
@@ -33,7 +36,7 @@ def follow(current_user):
         return jsonify({"message": "Wystąpił błąd przy dodawaniu obserwacji do bazy danych: " + str(e)}), 400
     
 
-@app.route("/unfollow/<int:follow_id>", methods=["DELETE"])
+@followbp.route("/unfollow/<int:follow_id>", methods=["DELETE"])
 @token_required
 def unfollow(current_user,follow_id):
 
@@ -42,7 +45,7 @@ def unfollow(current_user,follow_id):
     else:
             return jsonify({"message": "Follow not found"}), 404
     
-@app.route("/follows", methods=["GET"])
+@followbp.route("/follows", methods=["GET"])
 @token_required
 def get_follows(current_user):
     follows = get_follows_by_user_id(current_user.user_id)
