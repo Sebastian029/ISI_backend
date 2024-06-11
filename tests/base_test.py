@@ -2,9 +2,9 @@
 import unittest
 from flask import Flask
 from flask_testing import TestCase
-from config import db
-from models.user import User
-from models.privilege import Privilege
+from app.config import db
+from app.models.user import User
+from app.models.privilege import Privilege
 
 class BaseTestCase(TestCase):
 
@@ -18,13 +18,12 @@ class BaseTestCase(TestCase):
     def setUp(self):
         db.create_all()
         self.user = User(
-            public_id="12345",
             name="John",
             surname="Doe",
             phone_number="1234567890",
-            email="john.doe@example.com"
+            email="john.doe@example.com",
+            password="password"
         )
-        self.user.set_password("password")
         db.session.add(self.user)
         self.privilege = Privilege(name="admin")
         db.session.add(self.privilege)
