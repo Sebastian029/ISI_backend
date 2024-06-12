@@ -14,16 +14,20 @@ def app():
 
     with flask_app.app_context():
         db.create_all()
+        yield flask_app
+        db.drop_all()
 
-        user = User(
+@pytest.fixture(scope='function')
+def setup_database(app):
+    with app.app_context():
+        user1 = User(
             name="John",
             surname="Doe",
             phone_number="1234567890",
             email="john.doe@example.com",
             password="password"
         )
-        user.public_id = "1"
-
+        user1.public_id = "1"
         user2 = User(
             name="John2",
             surname="Doe2",
@@ -32,21 +36,17 @@ def app():
             password="password"
         )
         user2.public_id = "2"
-        db.session.add(user2)
+
         privilege = Privilege(name="buying")
         db.session.add(privilege)
 
         role = Role(name="admin")
         db.session.add(role)
-        user.roles.append(role)
-        user.privileges.append(privilege)
-        db.session.add(user)
+        user1.roles.append(role)
+        user1.privileges.append(privilege)
+        db.session.add(user1)
+        db.session.add_all([user1, user2])
         db.session.commit()
-
-    yield flask_app
-
-    with flask_app.app_context():
-        db.drop_all()
 
 @pytest.fixture(scope='function')
 def test_client(app):

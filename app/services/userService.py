@@ -28,7 +28,6 @@ def register_user():
             email=data.email,
             phone_number=data.phoneNumber,
             password=data.password,
-            notification=False
         )
     except Exception as e:
         return jsonify({"message": str(e)}), 400
@@ -123,7 +122,7 @@ def refresh():
         return jsonify({'message': 'Refresh token is missing'}), 400
     
     try:
-        data = jwt.decode(refresh_token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        data = jwt.decode(refresh_token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
         return jsonify({'message': 'Refresh token has expired'}), 401
     except jwt.InvalidTokenError:

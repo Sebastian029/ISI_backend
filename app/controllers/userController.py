@@ -49,18 +49,6 @@ def get_data_users_json():
     users = [user.to_json_privileges() for user in users]
     return users
 
-def update_user(id, public_id, name, surname, phone_number, email):
-    user = get_user_by_id(id)
-    if user:
-        user.public_id = public_id
-        user.name = name
-        user.surname = surname
-        user.phone_number = phone_number
-        user.email = email
-        db.session.commit()
-        return user
-    return None
-
 def delete_user(user_id):
     user = get_user_by_id(user_id)
 
@@ -85,3 +73,5 @@ def change_data(data, user):
     if data.surname:
         user.surname = data.surname
     db.session.commit()
+    return user
+    
