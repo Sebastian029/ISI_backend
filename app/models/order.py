@@ -34,8 +34,7 @@ class Order(db.Model):
         return {
             "order_id": self.order_id,
             "full_price": self.full_price,
-            "is_payment_completed": self.is_payment_completed,
             "paymentMethod": self.paymentMethod,
             "orderDate": self.orderDate,
-            "user": self.user.to_json_order() if self.user else None,
+            "user": self.user.to_json() if self.user else None,
         }

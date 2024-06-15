@@ -206,6 +206,7 @@ def get_flights_with_airports():
 
 @fligtbp.route('/flights_with_airports_token', methods=['GET'])
 @token_required
+@role_required('user')
 def get_flights_with_airports_token(current_user):
     try:
         departure_airport_id = request.args.get('departure_airport_id')

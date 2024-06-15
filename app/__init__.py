@@ -25,7 +25,7 @@ def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27d
     app.config['REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
     app.config['BLACKLIST'] = set()
-    CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:5000"]}})
     app.config['MAIL_SERVER']='smtp.fastmail.com'
     app.config['MAIL_PORT'] = 465
     app.config['MAIL_USERNAME'] = 'dominikjaroszek@fastmail.com'
