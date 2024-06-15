@@ -11,7 +11,7 @@ paymentbp = blueprints.Blueprint('paymentbp', __name__)
 @paymentbp.route('/create-payment', methods=['POST'])
 @token_required
 @role_required('user')
-def create_payment():
+def create_payment(current_user):
     data = request.json
     full_price = data.get('full_price')
     order_id = data.get('order_id')
@@ -35,8 +35,8 @@ def create_payment():
             "payment_method": "paypal"
         },
         "redirect_urls": {
-            "return_url": url_for('execute_payment', order_id=order_id, _external=True),
-            "cancel_url": url_for('payment_cancelled', order_id=order_id, _external=True)
+            "return_url": url_for('paymentbp.execute_payment', order_id=order_id, _external=True),
+            "cancel_url": url_for('paymentbp.payment_cancelled', order_id=order_id, _external=True)
         },
         "transactions": [{
             "item_list": {
