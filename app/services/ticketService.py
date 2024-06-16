@@ -1,7 +1,7 @@
 from app.controllers.ticketController import  *
 from app.controllers.orderController import *
 from flask import request, jsonify
-from app.utils import token_required,role_required
+from app.utils import token_required, role_required, privilege_required
 from app.schemas.ticket_schema import TicketBuyModel
 from pydantic import ValidationError
 
@@ -21,7 +21,7 @@ def get_tickets(flightid):
 @ticketbp.route("/ticket_buy", methods=["POST"])
 @token_required
 @role_required('user')
-# @privilege_required('buying')
+@privilege_required('buying')
 def buy_tickets(current_user):
     try:
         data = request.json

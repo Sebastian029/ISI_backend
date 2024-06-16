@@ -30,20 +30,26 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
    return decorator
 
-def generate_access_token(public_id):
+def generate_access_token(public_id, roles, name, surname):
     payload = {
         'exp': datetime.utcnow() + current_app.config['ACCESS_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
         'public_id': public_id,
-        
+        'roles': roles,
+        'name': name,
+        'surname': surname
+
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
-def generate_refresh_token(public_id):
+def generate_refresh_token(public_id, roles, name, surname):
     payload = {
         'exp': datetime.utcnow() + current_app.config['REFRESH_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
-        'public_id': public_id
+        'public_id': public_id,
+        'roles': roles,
+        'name': name,
+        'surname': surname
     }
     token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
     refresh_token = RefreshToken(
