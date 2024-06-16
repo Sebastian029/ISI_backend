@@ -34,7 +34,8 @@ def generate_access_token(public_id):
     payload = {
         'exp': datetime.utcnow() + current_app.config['ACCESS_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
-        'public_id': public_id
+        'public_id': public_id,
+        
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 

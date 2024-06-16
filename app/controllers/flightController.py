@@ -38,6 +38,7 @@ def update_available_seats(flight_id, remaining_tickets):
             for follower in followers:
                 user = get_user_by_id(follower.user_id)
                 if user and user.notification:
+                    
                     send_notification_email(follower.user_id, flight_id)
 
         if flight.available_seats == 0:
