@@ -52,7 +52,9 @@ def get_orders_tickets_route(current_user):
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
 @orderbp.route('/orders/transfer', methods=['GET'])
-def get_orders_transfer_route():
+@token_required
+@role_required('admin')
+def get_orders_transfer_route(current_user):
     try:
         orders = get_transfer_uncompleted_orders()
         return orders
@@ -65,7 +67,9 @@ def get_orders_transfer_route():
 
 
 @orderbp.route('/order/confirm/<int:order_id>', methods=['GET'])
-def confirm_order_route(order_id):
+@token_required
+@role_required('admin')
+def confirm_order_route( current_user, order_id):
     try:
         order = get_order_by_id(order_id)
         if order.is_payment_completed == 1:
