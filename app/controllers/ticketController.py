@@ -104,18 +104,18 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
             if ticket.is_bought:
                 already_bought_tickets.append(ticket_id)
-        
+
         if already_bought_tickets:
             return {"message": f"Tickets with ids {already_bought_tickets} are already bought"}, 400
-        
+
         new_order = Order(user_id=current_user.user_id, full_price=0, is_payment_completed=0, paymentMethod=paymentMethod, orderDate=datetime.now())
         db.session.add(new_order)
 
         total_price = 0
-
+        remaining_tickets = len(ticket_ids)
+        update_available_seats(ticket.flight_id, remaining_tickets)
         for ticket_id in ticket_ids:
             ticket = get_ticket_by_id(ticket_id)
-
             if ticket:
                 ticket_price = ticket.price
                 ticket.is_bought = True
@@ -126,12 +126,8 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
 
         new_order.full_price = total_price
-        
-        remaining_tickets = len(ticket_ids)
-
-        update_available_seats(ticket.flight_id, remaining_tickets)
-
         db.session.commit()
+
         return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id, "full_price": new_order.full_price}, 200
     except Exception as e:
         db.session.rollback()

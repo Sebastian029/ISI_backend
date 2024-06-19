@@ -44,8 +44,8 @@ def login():
     user = get_user_by_email(data.email)
     if check_password_controller(user, data.password):
         roles = all_get_role(user)
-        access_token = generate_access_token(user.public_id, roles, user.name, user.surname)
-        refresh_token = generate_refresh_token(user.public_id, roles, user.name, user.surname)
+        access_token = generate_access_token(user.public_id)
+        refresh_token = generate_refresh_token(user.public_id)
 
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token, 'roles': roles, 'name': user.name, 'surname':user.surname}), 200
     
@@ -95,8 +95,7 @@ def get_contacts(current_user):
     return jsonify(users)
 
 @userbp.route('/logout', methods=['DELETE'])
-@token_required
-def logout(current_user):
+def logout():
     token = None
     if 'x-access-tokens' in request.headers:
         token = request.headers['x-access-tokens']
@@ -104,9 +103,12 @@ def logout(current_user):
     refresh_token = None    
     if 'x-refresh-tokens' in request.headers:
         refresh_token = request.headers['x-refresh-tokens']
+        
+
     if revoke_token(refresh_token,token):
-        return jsonify({"message": "Refresh token revoked"})
+        return jsonify({"message": "Refresh and aceess token revoked"}),200
     return jsonify({"message": "Invalid refresh token"}), 400
+    
 
 @userbp.route('/contact', methods=['GET'])
 @token_required
