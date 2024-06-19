@@ -3,7 +3,7 @@ from functools import wraps
 from flask import request, jsonify, current_app
 from app.models.user import User
 from datetime import datetime, timedelta
-from app.models.refreshtoken import RefreshToken
+from app.models.token import Token
 from app.config import db
 
 def token_required(f):
@@ -16,8 +16,6 @@ def token_required(f):
         if not token:
            return jsonify({'message': 'a valid token is missing'}), 401
        
-        if token in current_app.config['BLACKLIST']:
-           return jsonify({'message': 'token is blacklisted'}), 401
 
         try:
            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
@@ -30,35 +28,34 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
    return decorator
 
-def generate_access_token(public_id):
+
+def generate_access_token(public_id, roles, name, surname):
     payload = {
         'exp': datetime.utcnow() + current_app.config['ACCESS_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
-        'public_id': public_id
+        'public_id': public_id,
+        'roles': roles,
+        'name': name,
+        'surname': surname
+
     }
     return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
 
-def generate_refresh_token(public_id):
+def generate_refresh_token(public_id, roles, name, surname):
     payload = {
         'exp': datetime.utcnow() + current_app.config['REFRESH_TOKEN_EXPIRES'],
         'iat': datetime.utcnow(),
-        'public_id': public_id
+        'public_id': public_id,
+        'roles': roles,
+        'name': name,
+        'surname': surname
     }
     token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
-    refresh_token = RefreshToken(
-        token=token,
-        public_id=public_id,
-        expires=datetime.utcnow() + current_app.config['REFRESH_TOKEN_EXPIRES'],
-        revoked=0
-    )
-    db.session.add(refresh_token)
-    db.session.commit()
     return token
 
-def revoke_token(token, secondToken):
-    refresh_token = RefreshToken.query.filter_by(token=token).first()
-    current_app.config['BLACKLIST'].add(secondToken)
-    if db.session.delete(refresh_token):
+def revoke_token(acess_token, refresh_token):
+    token = token.query.filter_by(refresh_token=refresh_token, acess_token=acess_token).first()
+    if db.session.delete(token):
         db.session.commit()
         return True
     return False

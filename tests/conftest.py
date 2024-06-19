@@ -54,7 +54,7 @@ def test_client(app):
 
 @pytest.fixture(scope='function')
 def get_token(app_context):
-    return generate_access_token("1")
+    return generate_access_token("1", ["admin"], "John", "Doe")
 
 @pytest.fixture(scope='function')
 def app_context(app):
