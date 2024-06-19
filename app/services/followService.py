@@ -2,7 +2,7 @@ from flask import jsonify, request
 from app.utils import token_required, role_required
 from app.controllers.followController import *
 from app.controllers.airlineController import get_airline_by_id
-from app.controllers.airportController import get_aiport_by_id
+from app.controllers.airportController import get_airports_by_id
 from app.controllers.planeController import get_plane_by_id
 from pydantic import ValidationError
 from app.controllers.flightController import get_flight_by_id
@@ -54,15 +54,17 @@ def get_follows(current_user):
     for follow in follows:
         flight = get_flight_by_id(follow.flight_id)
         if flight:
-            departure_airport = get_aiport_by_id(flight.departure_airport_id)
-            arrive_airport = get_aiport_by_id(flight.arrive_airport_id)
+            departure_airport = get_airports_by_id(flight.departure_airport_id)
+            arrive_airport = get_airports_by_id(flight.arrive_airport_id)
             plane = get_plane_by_id(flight.plane_id)
             airline = get_airline_by_id(flight.airline_id)
             is_follow = get_follow(current_user.user_id, flight.flight_id)
             follow_flight_data.append({
                 "flight_id": flight.flight_id,
-                "departure_airport_name": departure_airport.airport_name if departure_airport else None,
-                "arrive_airport_name": arrive_airport.airport_name if arrive_airport else None,
+                "departure_airport": departure_airport.Airport.airport_name if departure_airport else None,
+                "arrival_airport": arrive_airport.Airport.airport_name if arrive_airport else None,
+                "departure_city": departure_airport.city_name if departure_airport else None,
+                "arrival_city": arrive_airport.city_name if arrive_airport else None,
                 "travel_time": str(flight.travel_time),
                 "distance": flight.distance,
                 "available_seats": flight.available_seats,
@@ -77,4 +79,3 @@ def get_follows(current_user):
 
       
     return jsonify(follow_flight_data), 200
-
