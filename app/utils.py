@@ -53,8 +53,8 @@ def generate_refresh_token(public_id, roles, name, surname):
     token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
     return token
 
-def revoke_token(acess_token, refresh_token):
-    token = token.query.filter_by(refresh_token=refresh_token, acess_token=acess_token).first()
+def revoke_token(access_token, refresh_token):
+    token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
     if db.session.delete(token):
         db.session.commit()
         return True

@@ -50,9 +50,10 @@ def login():
         roles = all_get_role(user)
         access_token = generate_access_token(user.public_id, roles, user.name, user.surname)
         refresh_token = generate_refresh_token(user.public_id, roles, user.name, user.surname)
-        token = Token(user_id=user.user_id, access_token= access_token, refresh_token=refresh_token)
+        print(access_token)
+        token = Token(refresh_token = refresh_token, access_token = access_token, user_id = user.user_id )
         db.session.add(token)
-
+        db.session.commit()
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
     
     return jsonify({'message': 'Nieprawidłowe dane logowania'}), 401
@@ -102,17 +103,19 @@ def get_contacts(current_user):
 
 @userbp.route('/logout', methods=['DELETE'])
 def logout():
-    acess_token = None
+    access_token = None
     if 'x-access-tokens' in request.headers:
-        acess_token = request.headers['x-access-tokens']
+        access_token = request.headers['x-access-tokens']
         
     refresh_token = None    
     if 'x-refresh-tokens' in request.headers:
         refresh_token = request.headers['x-refresh-tokens']
         
 
-    if revoke_token(acess_token, refresh_token):
+    if revoke_token(access_token, refresh_token):
         return jsonify({"message": "Refresh and aceess token revoked"}),200
+    
+    
     return jsonify({"message": "Invalid refresh token"}), 400
     
 
