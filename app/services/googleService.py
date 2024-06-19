@@ -80,8 +80,7 @@ def callback():
             email=users_email,
             password="*",
         )
-
-    access_token = generate_access_token(user.public_id)
-    refresh_token = generate_refresh_token(user.public_id)
-    rola = "user"
-    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}&roles={rola}")
+    access_token = generate_access_token(user.public_id, ['user'], user.name, user.surname)
+    refresh_token = generate_refresh_token(user.public_id, ['user'], user.name, user.surname)
+    
+    return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}")
