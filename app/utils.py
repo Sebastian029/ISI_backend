@@ -80,7 +80,7 @@ def privilege_required(privilege_name):
             privileges = current_user.privileges
             list_privileges = [privilege.name for privilege in privileges]
             if privilege_name not in list_privileges:
-                return jsonify({'message': 'privilege is invalid'})
+                return jsonify({'message': 'privilege is invalid'}), 403
             return func(current_user, *args, **kwargs)
         return authorize
     return decorator
