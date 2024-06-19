@@ -8,7 +8,8 @@ class Token(db.Model):
 
 
 
-    def __init__(self, refresh_token, access_token, user_id ):
+    def __init__(self, token_id, refresh_token, access_token, user_id ):
+        self.token_id = token_id
         self.user_id = user_id
         self.access_token = access_token
         self.refresh_token = refresh_token

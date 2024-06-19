@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from app.config import db
 from app.models.token import Token
 from sqlalchemy import update
+from app.controllers.tokenController import get_first_free_token_id
 
 userbp= blueprints.Blueprint('userbp', __name__)
 
@@ -51,7 +52,7 @@ def login():
         access_token = generate_access_token(user.public_id, roles, user.name, user.surname)
         refresh_token = generate_refresh_token(user.public_id, roles, user.name, user.surname)
         print(access_token)
-        token = Token(refresh_token = refresh_token, access_token = access_token, user_id = user.user_id )
+        token = Token(token_id = get_first_free_token_id(), refresh_token = refresh_token, access_token = access_token, user_id = user.user_id )
         db.session.add(token)
         db.session.commit()
         return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
@@ -144,13 +145,13 @@ def refresh():
     if current_user is None:
         return jsonify({'message': 'Invalid refresh token'}), 401
     
-    stored_token = Token.query.filter_by(refresh_token=refresh_token).first()
+    stored_token = Token.query.filter_by(token_id =get_first_free_token_id() , refresh_token=refresh_token).first()
     if not stored_token:
         return jsonify({'message': 'Invalid or expired refresh token'}), 401
     roles = all_get_role(current_user)
     new_access_token = generate_access_token(current_user.public_id, roles, current_user.name, current_user.surname)
 
-    stmt = update(Token).where(Token.token_id == stored_token.token_id).values(acess_token=new_access_token)
+    stmt = update(Token).where(Token.token_id == stored_token.token_id).values(access_token=new_access_token)
     db.session.execute(stmt)
     db.session.commit()
     return jsonify({'access_token': new_access_token})
