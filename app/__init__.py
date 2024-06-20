@@ -21,7 +21,7 @@ def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27d
     app.config['SECRET_KEY']='daaa9975582b77c920be486c44667846'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=5)
+    app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=5)
     app.config['REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
 
     app.config['BLACKLIST'] = set()

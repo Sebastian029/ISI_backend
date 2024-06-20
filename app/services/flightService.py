@@ -68,78 +68,75 @@ def register_flight(current_user):
 @fligtbp.route('/suggest_flights', methods=['GET'])
 @token_required
 def suggest_flights(current_user):
-    # Get the last 10 orders of the user
-    orders = order_by_user(current_user.user_id)
+    def format_flight(flight):
+        dep_airport = Airport.query.get(flight.departure_airport_id)
+        arr_airport = Airport.query.get(flight.arrive_airport_id)
+        dep_city = City.query.get(dep_airport.city_id)
+        arr_city = City.query.get(arr_airport.city_id)
+        
+        return {
+            "flight_id": flight.flight_id,
+            "departure_airport": dep_airport.airport_name,
+            "departure_city": dep_city.city_name,
+            "arrival_airport": arr_airport.airport_name,
+            "arrival_city": arr_city.city_name,
+            "distance": flight.distance,
+            "available_seats": flight.available_seats,
+            "travel_time": flight.travel_time.strftime('%H:%M:%S'),
+            "data_lotu": flight.data_lotu
+        }
 
-    # Get all the tickets from these orders
+    orders = order_by_user(current_user.user_id)
     tickets = [ticket for order in orders for ticket in order.tickets]
 
     if len(tickets) < 5:
-        # Jeśli użytkownik ma mniej niż 5 kupionych biletów, zwracamy losowy bilet, którego dotychczas nie kupił
         all_flights = Flight.query.all()
-        purchased_flights = [ticket.flight_id for ticket in tickets]
+        purchased_flights = {ticket.flight_id for ticket in tickets}
         unpurchased_flights = [flight for flight in all_flights if flight.flight_id not in purchased_flights]
         random_flight = random.choice(unpurchased_flights)
-        return jsonify(random_flight.to_json()), 200
+        return jsonify(format_flight(random_flight)), 200
 
-    # Get the last 5 tickets
     last_5_tickets = tickets[-5:]
-
-    # Get all the flights from these 5 tickets
     last_5_flights = [Flight.query.get(ticket.flight_id) for ticket in last_5_tickets]
 
-    # Analyze the departure and arrival airports
-    departure_airports = [flight.departure_airport_id for flight in last_5_flights]
-    arrival_airports = [flight.arrive_airport_id for flight in last_5_flights]
+    dep_airports = [flight.departure_airport_id for flight in last_5_flights]
+    arr_airports = [flight.arrive_airport_id for flight in last_5_flights]
 
-    most_common_departure = max(set(departure_airports), key=departure_airports.count)
-    most_common_arrival = max(set(arrival_airports), key=arrival_airports.count)
+    common_dep_airport = max(set(dep_airports), key=dep_airports.count)
+    common_arr_airport = max(set(arr_airports), key=arr_airports.count)
 
-    # Suggest flights based on the most common departure and arrival airports
-    potential_flights_airport = Flight.query.filter_by(departure_airport_id=most_common_departure, arrive_airport_id=most_common_arrival).all()
+    suggested_flights = Flight.query.filter_by(
+        departure_airport_id=common_dep_airport,
+        arrive_airport_id=common_arr_airport
+    ).all()
 
-    # Exclude the flights that the user has already purchased
-    suggested_flights_airport = [flight for flight in potential_flights_airport if flight not in last_5_flights]
+    purchased_flight_ids = {ticket.flight_id for ticket in last_5_tickets}
+    suggestions = [flight for flight in suggested_flights if flight.flight_id not in purchased_flight_ids]
 
-    # Limit the suggestions to 2 flights
-    suggested_flights_airport = suggested_flights_airport[:2]
+    if not suggestions:
+        dep_countries = [flight.departure_airport.city.country_id for flight in last_5_flights]
+        arr_countries = [flight.arrive_airport.city.country_id for flight in last_5_flights]
 
-    # Analyze the countries for departure and arrival airports
-    departure_countries = [flight.departure_airport.city.country_id for flight in last_5_flights]
-    arrival_countries = [flight.arrive_airport.city.country_id for flight in last_5_flights]
+        common_dep_country = max(set(dep_countries), key=dep_countries.count)
+        common_arr_country = max(set(arr_countries), key=arr_countries.count)
 
-    most_common_departure_country = max(set(departure_countries), key=departure_countries.count)
-    most_common_arrival_country = max(set(arrival_countries), key=arrival_countries.count)
+        suggestions = Flight.query.join(Airport, Flight.departure_airport_id == Airport.airport_id) \
+            .join(City, Airport.city_id == City.city_id) \
+            .filter(City.country_id == common_dep_country) \
+            .join(Airport, Flight.arrive_airport_id == Airport.airport_id, isouter=True) \
+            .join(City, Airport.city_id == City.city_id, isouter=True) \
+            .filter(City.country_id == common_arr_country) \
+            .all()
 
-    # Aliases for Airport and City tables
-    dep_airport = aliased(Airport, name='dep_airport')
-    arr_airport = aliased(Airport, name='arr_airport')
-    dep_city = aliased(City, name='dep_city')
-    arr_city = aliased(City, name='arr_city')
+        suggestions = [flight for flight in suggestions if flight.flight_id not in purchased_flight_ids]
 
-    # Query for potential flights
-    potential_flights_country = Flight.query \
-        .join(dep_airport, Flight.departure_airport_id == dep_airport.airport_id) \
-        .join(dep_city, dep_airport.city_id == dep_city.city_id) \
-        .join(arr_airport, Flight.arrive_airport_id == arr_airport.airport_id, isouter=True) \
-        .join(arr_city, arr_airport.city_id == arr_city.city_id, isouter=True) \
-        .filter(dep_city.country_id == most_common_departure_country) \
-        .filter(arr_city.country_id == most_common_arrival_country) \
-        .all()
+    suggestions = suggestions[:2]
 
-    # Exclude the flights that the user has already purchased
-    suggested_flights_country = [flight for flight in potential_flights_country if flight not in last_5_flights]
-
-    # Limit the suggestions to 2 flights
-    suggested_flights_country = suggested_flights_country[:1]
-
-    # Combine the suggestions from both criteria and ensure no duplicates
-    suggested_flights = list({flight.flight_id: flight for flight in suggested_flights_airport + suggested_flights_country}.values())
-
-    if suggested_flights:
-        return jsonify([flight.to_json() for flight in suggested_flights]), 200
+    if suggestions:
+        return jsonify([format_flight(flight) for flight in suggestions]), 200
     else:
         return jsonify({"message": "No suggested flights found"}), 404
+
 
 
 @fligtbp.route('/flights_with_airports', methods=['GET'])
