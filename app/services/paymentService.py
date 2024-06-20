@@ -36,7 +36,7 @@ def create_payment(current_user):
         },
         "redirect_urls": {
             "return_url": url_for('paymentbp.execute_payment', order_id=order_id, _external=True),
-            "cancel_url": url_for('paymentbp.payment_cancelled', order_id=order_id, _external=True)
+            "cancel_url": url_for('paymentbp.payment_cancelled', order_id=order_id, full_price = full_price, _external=True)
         },
         "transactions": [{
             "item_list": {
@@ -82,4 +82,6 @@ def execute_payment():
 
 @paymentbp.route('/payment-cancelled', methods=['GET'])
 def payment_cancelled():
-    return redirect('http://localhost:5173/cancell')
+    order_Id = request.args.get('order_id')
+    fullPrice = request.args.get('full_price')
+    return redirect(f'http://localhost:5173/transferdetails?orderId={order_Id}&fullPrice={fullPrice}')
