@@ -1,9 +1,11 @@
+from app.controllers.userController import get_user_by_id
 from app.models.ticket import Ticket
 from app.controllers.planeController import *
-from app.controllers.flightController import update_available_seats
+from app.controllers.flightController import update_available_seats, get_flight_by_id
 from app.models.order import Order
 from app.config import db
 from datetime import datetime
+from flask_mailman import EmailMessage
 
 
 def register_tickets(plane_id, new_flight):
@@ -114,6 +116,7 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
         total_price = 0
         remaining_tickets = len(ticket_ids)
         update_available_seats(ticket.flight_id, remaining_tickets)
+        flight_id = None
         for ticket_id in ticket_ids:
             ticket = get_ticket_by_id(ticket_id)
             if ticket:
@@ -121,12 +124,14 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
                 ticket.is_bought = True
                 ticket.order_id = new_order.order_id
                 total_price += ticket_price
+                flight_id = ticket.flight_id
             else:
                 db.session.rollback()
                 return {"message": f"Ticket with id {ticket_id} not found"}, 404
 
         new_order.full_price = total_price
         db.session.commit()
+        send_order_email(current_user.user_id, flight_id)
 
         return {"message": "Tickets successfully marked as bought", "order_id": new_order.order_id, "full_price": new_order.full_price}, 200
     except Exception as e:
@@ -134,6 +139,25 @@ def buy_tickets_service(current_user, ticket_ids, paymentMethod):
         return {"message": f"An error occurred: {str(e)}"}, 500
     
 
+def send_order_email(user_id, flight_id):
+    try:
+        user = get_user_by_id(user_id)
+        flight = get_flight_by_id(flight_id)
+        email = user.email
+        if user and flight:
+            msg = EmailMessage(
+                'Hi ' + str(user.name) + '! ',
+                'Thank you for choosing us! \n' +
+                'Your reservation for the flight fom: ' + str(flight.departure_airport.airport_name) + ' to '
+                + str(flight.arrive_airport.airport_name) + ' has ben successfully made \n'
+                'Date of your flight: ' + str(flight.data_lotu),
+                'dominikjaroszek@fastmail.com',
+                [str(email)],
+            )
+            msg.send()
+            return "Email sent"
+    except Exception as e:
+        return str(e)
 
 
 def delete_ticket_service(ticket_id):
