@@ -47,7 +47,7 @@ def test_get_users_privileges(setup_database,test_client, get_token):
     }
     response = test_client.get("/users/privilages", headers=headers)
     assert response.status_code == 200
-    assert response.json[0]['email'] == 'john.doe@example.com'
+    assert response.json[0]['email'] == 'john.doe2@example.com'
 
 def test_add_user_privilege(setup_database,test_client, get_token):
     headers = {

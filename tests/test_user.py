@@ -49,7 +49,7 @@ def test_get_user_by_public_id(setup_database):
 
 def test_get_data_users_json(setup_database):
     users = get_data_users_json()
-    assert len(users) == 2
+    assert len(users) == 1
 
 
 def test_delete_user(setup_database):

@@ -41,10 +41,12 @@ def setup_database(app):
         db.session.add(privilege)
 
         role = Role(name="admin")
+        role2 = Role(name="user")
         db.session.add(role)
+        db.session.add(role2)
         user1.roles.append(role)
         user1.privileges.append(privilege)
-        db.session.add(user1)
+        user2.roles.append(role2)
         db.session.add_all([user1, user2])
         db.session.commit()
 
