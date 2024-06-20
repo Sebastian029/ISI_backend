@@ -100,9 +100,12 @@ def suggest_flights(current_user):
             and flight.flight_id not in followed_flights 
             and flight.available_seats > 0
         ]
-        if unpurchased_unfollowed_flights:
+        if len(unpurchased_unfollowed_flights) >= 2:
+            random_flights = random.sample(unpurchased_unfollowed_flights, 2)
+            return jsonify([format_flight(flight) for flight in random_flights]), 200
+        elif unpurchased_unfollowed_flights:
             random_flight = random.choice(unpurchased_unfollowed_flights)
-            return jsonify(format_flight(random_flight)), 200
+            return jsonify([format_flight(random_flight)]), 200
         else:
             return jsonify({"message": "No available flights found"}), 404
 
@@ -156,7 +159,16 @@ def suggest_flights(current_user):
             and flight.available_seats > 0
         ]
 
-    suggestions = suggestions[:2]
+    if len(suggestions) < 2:
+        all_flights = Flight.query.all()
+        unpurchased_unfollowed_flights = [
+            flight for flight in all_flights 
+            if flight.flight_id not in purchased_flight_ids 
+            and flight.flight_id not in followed_flights 
+            and flight.available_seats > 0
+        ]
+        additional_flights = random.sample(unpurchased_unfollowed_flights, 2 - len(suggestions))
+        suggestions.extend(additional_flights)
 
     if suggestions:
         return jsonify([format_flight(flight) for flight in suggestions]), 200
