@@ -13,7 +13,7 @@ from .services.followService import followbp
 from .services.flightService import fligtbp
 from .services.airportService import airportbp
 from .services.airlineService import airlinebp
-
+from .services.roleService import rolebp
 
 def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27dba8ad-cichywojxpompa-acd5.b.aivencloud.com:23900/defaultdb?ssl_ca=ssl_cert.pem"):
     app = Flask(__name__)
@@ -44,6 +44,7 @@ def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27d
     app.register_blueprint(fligtbp)
     app.register_blueprint(airportbp)
     app.register_blueprint(airlinebp)
+    app.register_blueprint(rolebp)
     
 
 

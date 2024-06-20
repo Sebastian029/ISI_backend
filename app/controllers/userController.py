@@ -46,8 +46,22 @@ def get_data_users_json():
     users = User.query.all()
     if not users:
         return []
-    users = [user.to_json_privileges() for user in users]
-    return users
+
+    # Filtruj użytkowników, którzy mają rolę 'user'
+    user_role_users = [user for user in users if any(role.name == 'user' for role in user.roles)]
+
+    users_json = [user.to_json_privileges() for user in user_role_users]
+    return users_json
+
+def get_role_users_json(current_user):
+    users = User.query.all()
+    if not users:
+        return []
+
+    users_json = [user.to_json_role() for user in users if user.user_id != current_user.user_id]
+    return users_json
+
+
 
 def delete_user(user_id):
     user = get_user_by_id(user_id)

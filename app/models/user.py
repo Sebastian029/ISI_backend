@@ -76,3 +76,13 @@ class User(db.Model):
             "email": self.email,
             "notification": self.notification
         }
+    
+    def to_json_role(self):
+        return {
+            "public_id": self.public_id,
+            "name": self.name,
+            "surname": self.surname,
+            "phone_number": self.phone_number,
+            "email": self.email,
+            "roles": [role.to_json() for role in self.roles]
+        }
