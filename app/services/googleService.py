@@ -4,6 +4,7 @@ from app.utils import *
 from oauthlib.oauth2 import WebApplicationClient
 import requests
 from app.controllers.roleUserController import create_user
+from app.controllers.tokenController import get_first_free_token_id
 
 from flask import blueprints
 
@@ -82,5 +83,9 @@ def callback():
         )
     access_token = generate_access_token(user.public_id, ['user'], user.name, user.surname)
     refresh_token = generate_refresh_token(user.public_id, ['user'], user.name, user.surname)
-    
+
+    token = Token(token_id = get_first_free_token_id(), refresh_token = refresh_token, access_token = access_token, user_id = user.user_id )
+    db.session.add(token)
+    db.session.commit()
+
     return redirect(f"http://localhost:5173/?access_token={access_token}&refresh_token={refresh_token}")
