@@ -1,7 +1,13 @@
+import os
 from flask import Flask
 from datetime import timedelta
 from flask_cors import CORS
-from .config import db,mail
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+from .config import db, mail
 from .services.userService import userbp
 from .services.ticketService import ticketbp
 from .services.privilageService import privilagebp
@@ -15,23 +21,31 @@ from .services.airportService import airportbp
 from .services.airlineService import airlinebp
 from .services.roleService import rolebp
 
-def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27dba8ad-cichywojxpompa-acd5.b.aivencloud.com:23900/defaultdb?ssl_ca=ssl_cert.pem"):
+def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri
-    app.config['SECRET_KEY']='daaa9975582b77c920be486c44667846'
+
+    # Use environment variables for configuration
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URI")
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=5)
-    app.config['REFRESH_TOKEN_EXPIRES'] = timedelta(days=7)
+    access_token_expires_minutes = int(os.getenv('ACCESS_TOKEN_EXPIRES_MINUTES', 5))
+    refresh_token_expires_days = int(os.getenv('REFRESH_TOKEN_EXPIRES_DAYS', 7))
+
+    app.config['ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=access_token_expires_minutes)
+    app.config['REFRESH_TOKEN_EXPIRES'] = timedelta(days=refresh_token_expires_days)
 
     app.config['BLACKLIST'] = set()
     CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
-    app.config['MAIL_SERVER']='smtp.fastmail.com'
-    app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'dominikjaroszek@fastmail.com'
-    app.config['MAIL_PASSWORD'] = '8a869t468s522z3x'
-    app.config['MAIL_USE_TLS'] = False
-    app.config['MAIL_USE_SSL'] = True
+    
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+ 
+
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'False') == 'True'
+    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'True') == 'True'
 
     app.register_blueprint(userbp)
     app.register_blueprint(ticketbp)
@@ -45,9 +59,6 @@ def create_app(database_uri="mysql://avnadmin:AVNS_vOiMluD6tv7HMw07Ho7@mysql-27d
     app.register_blueprint(airportbp)
     app.register_blueprint(airlinebp)
     app.register_blueprint(rolebp)
-    
-
-
 
     db.init_app(app)
     mail.init_app(app)
