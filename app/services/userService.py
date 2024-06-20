@@ -109,11 +109,12 @@ def logout():
     access_token = None
     if 'x-access-tokens' in request.headers:
         access_token = request.headers['x-access-tokens']
-        
+    print(access_token)
+
     refresh_token = None    
     if 'x-refresh-tokens' in request.headers:
         refresh_token = request.headers['x-refresh-tokens']
-        
+    print(refresh_token)
 
     if revoke_token(access_token, refresh_token):
         return jsonify({"message": "Refresh and aceess token revoked"}),200
@@ -191,7 +192,7 @@ def refresh():
 @userbp.route("/user_privileges", methods=["POST"])
 @token_required
 @role_required('admin')
-def get_contacts_email():
+def get_contacts_email(current_user):
     try:
          data = UserSearchModel(**request.json)
             

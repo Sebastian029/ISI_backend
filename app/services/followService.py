@@ -40,7 +40,7 @@ def follow(current_user):
 @followbp.route("/unfollow/<int:follow_id>", methods=["DELETE"])
 @token_required
 @role_required('user')
-def unfollow(current_user,follow_id):
+def unfollow(current_user, follow_id):
 
     if delete_follow(follow_id):
             return jsonify({"message": "Follow deleted!"}), 200

@@ -10,9 +10,7 @@ from flask import blueprints
 ticketbp = blueprints.Blueprint('ticketbp', __name__)
 
 @ticketbp.route("/tickets/<int:flightid>", methods=["GET"])
-@token_required
-@role_required('user')
-def get_tickets(flightid):
+def get_tickets( flightid):
     try:
         tickets = get_tickets_id(flightid)
         return jsonify(tickets)

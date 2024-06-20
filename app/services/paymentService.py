@@ -59,8 +59,6 @@ def create_payment(current_user):
     
 
 @paymentbp.route('/execute-payment', methods=['GET'])
-@token_required
-@role_required('user')
 def execute_payment():
     payment_id = request.args.get('paymentId')
     payer_id = request.args.get('PayerID')
@@ -83,8 +81,6 @@ def execute_payment():
 
 
 @paymentbp.route('/payment-cancelled', methods=['GET'])
-@token_required
-@role_required('user')
 def payment_cancelled():
     order_Id = request.args.get('order_id')
     fullPrice = request.args.get('full_price')
