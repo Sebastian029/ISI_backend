@@ -59,6 +59,12 @@ def get_token(app_context):
     return generate_access_token("1", ["admin"], "John", "Doe")
 
 @pytest.fixture(scope='function')
+def get_token_user(app_context):
+    return generate_access_token("2", ["user"], "John2", "Doe2")
+
+
+
+@pytest.fixture(scope='function')
 def app_context(app):
     with app.app_context():
         yield

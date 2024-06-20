@@ -106,9 +106,9 @@ def test_update_notification(test_client, setup_database, get_token):
     response = test_client.patch("/notification", headers=headers)
     assert response.status_code == 200
 
-def test_update_user(test_client, setup_database, get_token):
+def test_update_user(test_client, setup_database, get_token_user):
     headers = {
-        "x-access-tokens": get_token,
+        "x-access-tokens": get_token_user,
         'Content-Type': 'application/json'
     }
     data = {
@@ -141,15 +141,15 @@ def test_get_contact(test_client, setup_database, get_token):
     assert response.status_code == 200
 
 
-def test_get_users_search(test_client, setup_database):
-    response = test_client.get("/users_search")
-    assert response.status_code == 200
 
-def test_get_contacts_email(test_client, setup_database):
+def test_get_contacts_email(test_client, setup_database, get_token_user):
+    headers = {
+        "x-access-tokens": get_token_user
+    }
     data = {
         "name": "John",
         "surname": "Doe",
         "email": "john.doe@example.com"
     }
-    response = test_client.post("/user_privileges", json=data)
+    response = test_client.post("/user_privileges", json=data, headers=headers)
     assert response.status_code == 200

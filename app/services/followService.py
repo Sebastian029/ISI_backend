@@ -13,6 +13,7 @@ followbp = blueprints.Blueprint('followbp', __name__)
 
 @followbp.route("/follow", methods=["POST"])
 @token_required
+@role_required('user')
 def follow(current_user):
     try:
         data = request.get_json()
@@ -38,6 +39,7 @@ def follow(current_user):
 
 @followbp.route("/unfollow/<int:follow_id>", methods=["DELETE"])
 @token_required
+@role_required('user')
 def unfollow(current_user,follow_id):
 
     if delete_follow(follow_id):
@@ -47,6 +49,7 @@ def unfollow(current_user,follow_id):
     
 @followbp.route("/follows", methods=["GET"])
 @token_required
+@role_required('user')
 def get_follows(current_user):
     follows = get_follows_by_user_id(current_user.user_id)
     follow_flight_data = []

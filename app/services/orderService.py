@@ -27,6 +27,8 @@ def register_order(current_user):
 
 
 @orderbp.route('/order/<int:order_id>', methods=['GET'])
+@token_required
+@role_required('user')
 def get_order_tickets_route(order_id):
     try:
         order = get_order_tickets(order_id)
@@ -40,6 +42,7 @@ def get_order_tickets_route(order_id):
 
 @orderbp.route('/orders/user/', methods=['GET'])
 @token_required
+
 def get_orders_tickets_route(current_user):
     try:
         orders = get_orders_user_tickets(current_user.user_id)

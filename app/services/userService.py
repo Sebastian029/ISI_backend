@@ -62,6 +62,7 @@ def login():
 
 @userbp.route("/notification", methods=["PATCH"])
 @token_required
+@role_required('user')
 def update_notification(current_user):
     user = get_user_by_id(current_user.user_id)
     if user:
@@ -74,6 +75,7 @@ def update_notification(current_user):
 
 @userbp.route("/update_user", methods=["PATCH"])
 @token_required
+@role_required('user')
 def update_user(current_user):
     try:
         data = UserUpdateModel(**request.json)
@@ -122,6 +124,7 @@ def logout():
 
 @userbp.route('/contact', methods=['GET'])
 @token_required
+@role_required('user')
 def get_contact(current_user):
     user = get_user_by_id(current_user.user_id)
     return jsonify(user.to_json_user())
@@ -184,13 +187,10 @@ def refresh():
 #         users = get_users(data.name, data.surname)
 #     return jsonify(users)
 
-@userbp.route("/users_search", methods=["GET"])
-def get_users_serach_route():
-    
-    users = get_users_search()
-    return jsonify(users)
 
 @userbp.route("/user_privileges", methods=["POST"])
+@token_required
+@role_required('admin')
 def get_contacts_email():
     try:
          data = UserSearchModel(**request.json)
