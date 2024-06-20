@@ -89,12 +89,22 @@ def suggest_flights(current_user):
     orders = order_by_user(current_user.user_id)
     tickets = [ticket for order in orders for ticket in order.tickets]
 
+    followed_flights = {follow.flight_id for follow in Follow.query.filter_by(user_id=current_user.user_id).all()}
+
     if len(tickets) < 5:
         all_flights = Flight.query.all()
         purchased_flights = {ticket.flight_id for ticket in tickets}
-        unpurchased_flights = [flight for flight in all_flights if flight.flight_id not in purchased_flights]
-        random_flight = random.choice(unpurchased_flights)
-        return jsonify(format_flight(random_flight)), 200
+        unpurchased_unfollowed_flights = [
+            flight for flight in all_flights 
+            if flight.flight_id not in purchased_flights 
+            and flight.flight_id not in followed_flights 
+            and flight.available_seats > 0
+        ]
+        if unpurchased_unfollowed_flights:
+            random_flight = random.choice(unpurchased_unfollowed_flights)
+            return jsonify(format_flight(random_flight)), 200
+        else:
+            return jsonify({"message": "No available flights found"}), 404
 
     last_5_tickets = tickets[-5:]
     last_5_flights = [Flight.query.get(ticket.flight_id) for ticket in last_5_tickets]
@@ -111,7 +121,12 @@ def suggest_flights(current_user):
     ).all()
 
     purchased_flight_ids = {ticket.flight_id for ticket in last_5_tickets}
-    suggestions = [flight for flight in suggested_flights if flight.flight_id not in purchased_flight_ids]
+    suggestions = [
+        flight for flight in suggested_flights 
+        if flight.flight_id not in purchased_flight_ids 
+        and flight.flight_id not in followed_flights 
+        and flight.available_seats > 0
+    ]
 
     if not suggestions:
         dep_countries = [flight.departure_airport.city.country_id for flight in last_5_flights]
@@ -120,15 +135,26 @@ def suggest_flights(current_user):
         common_dep_country = max(set(dep_countries), key=dep_countries.count)
         common_arr_country = max(set(arr_countries), key=arr_countries.count)
 
-        suggestions = Flight.query.join(Airport, Flight.departure_airport_id == Airport.airport_id) \
-            .join(City, Airport.city_id == City.city_id) \
-            .filter(City.country_id == common_dep_country) \
-            .join(Airport, Flight.arrive_airport_id == Airport.airport_id, isouter=True) \
-            .join(City, Airport.city_id == City.city_id, isouter=True) \
-            .filter(City.country_id == common_arr_country) \
+        dep_airport_alias = aliased(Airport, name='dep_airport_alias')
+        arr_airport_alias = aliased(Airport, name='arr_airport_alias')
+        dep_city_alias = aliased(City, name='dep_city_alias')
+        arr_city_alias = aliased(City, name='arr_city_alias')
+
+        suggestions = Flight.query \
+            .join(dep_airport_alias, Flight.departure_airport_id == dep_airport_alias.airport_id) \
+            .join(dep_city_alias, dep_airport_alias.city_id == dep_city_alias.city_id) \
+            .filter(dep_city_alias.country_id == common_dep_country) \
+            .join(arr_airport_alias, Flight.arrive_airport_id == arr_airport_alias.airport_id, isouter=True) \
+            .join(arr_city_alias, arr_airport_alias.city_id == arr_city_alias.city_id, isouter=True) \
+            .filter(arr_city_alias.country_id == common_arr_country) \
             .all()
 
-        suggestions = [flight for flight in suggestions if flight.flight_id not in purchased_flight_ids]
+        suggestions = [
+            flight for flight in suggestions 
+            if flight.flight_id not in purchased_flight_ids 
+            and flight.flight_id not in followed_flights 
+            and flight.available_seats > 0
+        ]
 
     suggestions = suggestions[:2]
 
@@ -136,6 +162,8 @@ def suggest_flights(current_user):
         return jsonify([format_flight(flight) for flight in suggestions]), 200
     else:
         return jsonify({"message": "No suggested flights found"}), 404
+
+
 
 
 

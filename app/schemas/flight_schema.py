@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-from datetime import datetime
+from datetime import datetime,date
 import re
 
 class FlightRegisterSchema(BaseModel):
@@ -30,9 +30,13 @@ class FlightRegisterSchema(BaseModel):
     @field_validator('data_lotu')
     def flight_date_format(cls, v):
         try:
-            datetime.strptime(v, '%Y-%m-%d')
+            flight_date = datetime.strptime(v, '%Y-%m-%d').date()
         except ValueError:
             raise ValueError('Date must be in the format YYYY-MM-DD')
+        
+        if flight_date <= date.today():
+            raise ValueError('Flight date must be a future date, excluding today')
+        
         return v
     
 class FlightSearchSchema(BaseModel):
